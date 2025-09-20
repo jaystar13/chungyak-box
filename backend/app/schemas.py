@@ -27,6 +27,8 @@ class NormalRequest(BaseModel):
 
 
 class RecalcRequest(BaseModel):
+    open_date: date
+    end_date: date
     payments: List[PaymentInput]
 
 
