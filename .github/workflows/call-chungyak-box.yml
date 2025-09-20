@@ -1,0 +1,16 @@
+name: Call Chungyak Box every 8 minutes
+
+on:
+  schedule:
+    # 8분마다 실행 (UTC 기준)
+    - cron: "*/8 * * * *"
+  workflow_dispatch: # 필요 시 수동 실행도 가능하게 추가
+
+jobs:
+  call-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call chungyak-box
+        run: |
+          echo "Calling https://chungyak-box.onrender.com/ ..."
+          curl -s -o /dev/null -w "%{http_code}" https://chungyak-box.onrender.com/ || exit 1
