@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:frontend/models/calculator_model.dart';
 
 class ApiServices {
+  // static final String baseUrl = "https://chungyak-box.onrender.com";
   static final String baseUrl = "http://127.0.0.1:8000";
 
   static Future<PaymentScheduleResponse> generatePaymentSchedule(

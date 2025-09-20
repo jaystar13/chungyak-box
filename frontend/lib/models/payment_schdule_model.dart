@@ -87,17 +87,33 @@ class PaymentRequest {
 }
 
 class PaymentScheduleRequest {
+  DateTime openDate;
+  DateTime endDate;
   List<PaymentRequest> payments;
 
-  PaymentScheduleRequest({required this.payments});
+  PaymentScheduleRequest({
+    required this.openDate,
+    required this.endDate,
+    required this.payments,
+  });
 
-  factory PaymentScheduleRequest.fromResponse(PaymentScheduleResponse res) {
+  factory PaymentScheduleRequest.fromResponse(
+    DateTime? openDate,
+    DateTime? endDate,
+    PaymentScheduleResponse res,
+  ) {
     return PaymentScheduleRequest(
+      openDate: openDate ?? DateTime.now(),
+      endDate: endDate ?? DateTime.now(),
       payments: res.payments.map((p) => PaymentRequest.fromPayment(p)).toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {"payments": payments.map((p) => p.toJson()).toList()};
+    return {
+      "open_date": openDate.toIso8601String().split('T').first,
+      "end_date": endDate.toIso8601String().split('T').first,
+      "payments": payments.map((p) => p.toJson()).toList(),
+    };
   }
 }
