@@ -25,6 +25,7 @@ def generate_normal_payments(
                 prepaid_days=0,
                 total_prepaid_days=0,
                 recognized_date=current,
+                is_recognized=True,
             )
         )
 
@@ -46,6 +47,14 @@ def recalc_payments(payments: List[PaymentInput]) -> List[PaymentRecord]:
     total_prepaid_days = 0
 
     for payment in payments:
+        # 선납 인정은 최대 24회차(=24개월)까지만 허용
+        max_recognized_date = payment.due_date.replace(
+            year=payment.due_date.year - (payment.due_date.month + 23) // 12,
+            month=(payment.due_date.month + 23) % 12 + 1
+        )
+        if payment.paid_date < max_recognized_date:
+            payment.paid_date = max_recognized_date
+
         delay_days = (payment.paid_date - payment.due_date).days
         prepaid_days = 0
 
@@ -68,6 +77,7 @@ def recalc_payments(payments: List[PaymentInput]) -> List[PaymentRecord]:
                 prepaid_days=prepaid_days,
                 total_prepaid_days=total_prepaid_days,
                 recognized_date=recognized_date,
+                is_recognized=recognized_date <= date.today(),
             )
         )
 

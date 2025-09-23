@@ -12,6 +12,7 @@ class PaymentRecord(BaseModel):
     prepaid_days: int
     total_prepaid_days: int
     recognized_date: date
+    is_recognized: bool = False
 
 
 class PaymentInput(BaseModel):
