@@ -1,5 +1,7 @@
+import 'package:chungyak_box/services/admob_services.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/calculator_screen.dart';
+import 'package:chungyak_box/screens/calculator_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 onPressed(context) {
   Navigator.push(
@@ -17,11 +19,89 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       // backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(onPressed: null, icon: Icon(Icons.menu)),
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: Icon(Icons.menu, color: colors.onPrimaryContainer),
+            );
+          },
+        ),
         elevation: 2,
         backgroundColor: colors.primaryContainer,
         // foregroundColor: Colors.green,
         // title: const Text('청약 박스'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Container(
+              height: kToolbarHeight + MediaQuery.of(context).padding.top,
+              color: colors.primaryContainer,
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: MediaQuery.of(context).padding.top,
+              ),
+              // child: Text(
+              //   '청약 박스',
+              //   style: TextStyle(
+              //     color: colors.onPrimaryContainer,
+              //     fontSize: 18,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              // ),
+            ),
+            ListTile(
+              leading: Icon(Icons.calculate, color: colors.onSurface),
+              title: Text(
+                '청약 인정회차 계산기',
+                style: TextStyle(color: colors.onSurface),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                onPressed(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.email, color: colors.onSurface),
+              title: Text('문의하기', style: TextStyle(color: colors.onSurface)),
+              onTap: () async {
+                Navigator.pop(context);
+                final Uri emailUri = Uri(
+                  scheme: 'mailto',
+                  path: 'rasccolii@gmail.com',
+                  query: 'subject=문의사항&body=안녕하세요,',
+                );
+                if (await canLaunchUrl(emailUri)) {
+                  await launchUrl(emailUri);
+                }
+              },
+            ),
+            const Divider(),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '버전 1.0.0',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '© 2025 ChungyakBox',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -94,6 +174,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
     );
   }
 }

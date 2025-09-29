@@ -2,7 +2,7 @@ class PaymentScheduleResponse {
   final int totalInstallments;
   final int totalDelayDays;
   final int totalPrepaidDays;
-  final List<Payment> payments;
+  List<Payment> payments;
 
   PaymentScheduleResponse({
     required this.totalInstallments,
@@ -26,12 +26,13 @@ class PaymentScheduleResponse {
 class Payment {
   final int installmentNo;
   final String dueDate;
-  final String paidDate;
+  String paidDate;
   final int delayDays;
   final int totalDelayDays;
   final int prepaidDays;
   final int totalPrepaidDays;
   final String recognizedDate;
+  final bool isRecognized;
 
   Payment({
     required this.installmentNo,
@@ -42,6 +43,7 @@ class Payment {
     required this.prepaidDays,
     required this.totalPrepaidDays,
     required this.recognizedDate,
+    required this.isRecognized,
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,7 @@ class Payment {
       prepaidDays: json['prepaid_days'],
       totalPrepaidDays: json['total_prepaid_days'],
       recognizedDate: json['recognized_date'],
+      isRecognized: json['is_recognized'],
     );
   }
 }

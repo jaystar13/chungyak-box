@@ -1,4 +1,4 @@
-name: frontend
+name: chungyak_box
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -35,11 +35,16 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   http: ^1.4.0
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.2
   flutter_localizations:
     sdk: flutter
   flutter_dotenv: ^6.0.0
   dynamic_color: ^1.8.1
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
+  google_mobile_ads: ^6.0.0
+  firebase_core: ^4.1.1
+  firebase_analytics: ^12.0.2
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +71,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/icons/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -93,3 +99,16 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_logo.png"
+
+flutter_native_splash:
+  color: "#b3e7ac"
+  image: assets/icons/app_logo_transparent.png
+  android: true
+  ios: true
+  web: false
+  android_gravity: center
+  ios_content_mode: center
