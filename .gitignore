@@ -1,0 +1,68 @@
+# ---------------------------------------------------
+# OS / System
+# ---------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ---------------------------------------------------
+# Python (Backend: FastAPI)
+# ---------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+.venv/
+.env
+*.env
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.iml
+
+# ---------------------------------------------------
+# Flutter (Frontend)
+# ---------------------------------------------------
+# Build
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.dart_tool/
+.generated/
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/key.properties
+android/.idea/
+
+# Web
+lib/generated_plugin_registrant.dart
+
+# Flutter specific
+pubspec.lock
+
+# ---------------------------------------------------
+# Logs / Temp
+# ---------------------------------------------------
+*.log
+*.pid
+*.seed
+*.pid.lock
