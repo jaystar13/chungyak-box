@@ -2,6 +2,7 @@ import 'package:chungyak_box/services/admob_services.dart';
 import 'package:flutter/material.dart';
 import 'package:chungyak_box/screens/calculator_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 onPressed(context) {
   Navigator.push(
@@ -75,7 +76,8 @@ class HomeScreen extends StatelessWidget {
                 final Uri emailUri = Uri(
                   scheme: 'mailto',
                   path: 'rasccolii@gmail.com',
-                  query: 'subject=문의사항&body=안녕하세요,',
+                  query:
+                      'subject=[문의사항]&body=안녕하세요, 청약 계산소 앱에 문의사항이 있어 연락드립니다.',
                 );
                 if (await canLaunchUrl(emailUri)) {
                   await launchUrl(emailUri);
@@ -88,13 +90,26 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '버전 1.0.0',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  FutureBuilder<PackageInfo>(
+                    future: PackageInfo.fromPlatform(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        final info = snapshot.data!;
+                        return Text(
+                          '버전 ${info.version}',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        );
+                      } else {
+                        return Text(
+                          '버전 확인 중...',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        );
+                      }
+                    },
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '© 2025 ChungyakBox',
+                    '© 2025 Chungyak Box',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],

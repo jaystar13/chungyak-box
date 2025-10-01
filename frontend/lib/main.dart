@@ -29,6 +29,7 @@ class App extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.green,
+          tertiary: Colors.indigoAccent,
           brightness: Brightness.light,
         ),
         textTheme: Typography.blackMountainView,
