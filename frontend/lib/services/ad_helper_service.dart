@@ -9,7 +9,7 @@ class AdHelper {
           : 'ca-app-pub-3940256099942544/6300978111'; // Android 테스트 ID
     } else if (Platform.isIOS) {
       return kReleaseMode
-          ? 'ca-app-pub-2770838096726003~2456788971'
+          ? 'ca-app-pub-2770838096726003/6279101025'
           : 'ca-app-pub-3940256099942544/2934735716'; // iOS 테스트 ID
     } else {
       throw UnsupportedError('Unsupported platform');
