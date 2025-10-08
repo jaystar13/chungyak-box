@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'ad_helper_service.dart';
+
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({super.key});
 
@@ -16,7 +18,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     super.initState();
     _bannerAd = BannerAd(
       size: AdSize.banner,
-      adUnitId: "ca-app-pub-3940256099942544/2934735716", // 테스트 ID
+      // adUnitId: "ca-app-pub-3940256099942544/2934735716", // 테스트 ID
+      adUnitId: AdHelper.bannerAdUnitId,
       listener: BannerAdListener(
         onAdFailedToLoad: (ad, err) {
           ad.dispose();
