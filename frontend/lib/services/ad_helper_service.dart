@@ -5,7 +5,7 @@ class AdHelper {
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
       return kReleaseMode
-          ? 'ca-app-pub-xxxxxxxxxxxxxxxx/android-real-banner'
+          ? 'ca-app-pub-2770838096726003/7462498178'
           : 'ca-app-pub-3940256099942544/6300978111'; // Android 테스트 ID
     } else if (Platform.isIOS) {
       return kReleaseMode

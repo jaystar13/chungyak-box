@@ -1,4 +1,4 @@
-package com.example.frontend
+package com.jaystar.chungyakbox
 
 import io.flutter.embedding.android.FlutterActivity
 

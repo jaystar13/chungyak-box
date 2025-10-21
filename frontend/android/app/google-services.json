@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "313180761205",
+    "project_id": "chungyak-box-a8479",
+    "storage_bucket": "chungyak-box-a8479.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:313180761205:android:7647f20482da89f9715c3c",
+        "android_client_info": {
+          "package_name": "com.jaystar.chungyakbox"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTtdzFn4kYK2ybh9dKyjEjBbbcd63NwOU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
