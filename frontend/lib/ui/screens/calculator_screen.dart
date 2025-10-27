@@ -1,5 +1,6 @@
 import 'package:chungyak_box/services/admob_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:chungyak_box/models/calculator_model.dart';
 import 'package:chungyak_box/models/payment_schdule_model.dart';
 import 'package:chungyak_box/services/api_services.dart';
@@ -17,14 +18,14 @@ Future<dynamic> recalculateSchedule(
   return await ApiServices.recalculateSchedule(requestSchedule);
 }
 
-class Calculator extends StatefulWidget {
-  const Calculator({super.key});
+class CalculatorScreen extends StatefulWidget {
+  const CalculatorScreen({super.key});
 
   @override
-  State<Calculator> createState() => _CalculatorState();
+  State<CalculatorScreen> createState() => _CalculatorScreenState();
 }
 
-class _CalculatorState extends State<Calculator> {
+class _CalculatorScreenState extends State<CalculatorScreen> {
   final _formKey = GlobalKey<FormState>();
 
   DateTime? openDate, endDate;
@@ -47,7 +48,7 @@ class _CalculatorState extends State<Calculator> {
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: TextStyle(fontSize: 14.sp)),
         backgroundColor: isError ? Colors.redAccent : null,
       ),
     );
@@ -142,7 +143,7 @@ class _CalculatorState extends State<Calculator> {
           decoration: InputDecoration(
             labelText: "계산 시작일",
             border: OutlineInputBorder(),
-            suffixIcon: const Icon(Icons.calendar_today),
+            suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
           ),
           controller: _openDateController,
           onTap: () => _pickDate(
@@ -151,13 +152,13 @@ class _CalculatorState extends State<Calculator> {
           ),
           validator: (value) => (openDate == null) ? '계산 시작일을 선택하세요' : null,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         TextFormField(
           readOnly: true,
           decoration: InputDecoration(
             labelText: "계산 종료일",
             border: OutlineInputBorder(),
-            suffixIcon: const Icon(Icons.calendar_today),
+            suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
           ),
           controller: _endDateController,
           onTap: () => _pickDate(
@@ -176,7 +177,10 @@ class _CalculatorState extends State<Calculator> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
         onPressed: _onGenerate,
-        child: Text("생성", style: TextStyle(color: colors.onPrimary)),
+        child: Text(
+          "생성",
+          style: TextStyle(color: colors.onPrimary, fontSize: 16.sp),
+        ),
       ),
     );
   }
@@ -237,40 +241,44 @@ class _CalculatorState extends State<Calculator> {
         shape: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.secondary,
-            width: 0.5,
+            width: 0.5.w,
           ),
         ),
         title: Padding(
-          padding: EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(8.0.w),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                // mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 70,
+                  Expanded(
                     child: Text(
                       "정상 ${stats['totalNormalCount']}회",
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.primary,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: 70,
+                  Expanded(
                     child: Text(
                       "지연 ${stats['totalDelayDayCount']}회",
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.error,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: 70,
+                  Expanded(
                     child: Text(
                       "선납 ${stats['totalPrepaidDayCount']}회",
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.tertiary,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ),
@@ -281,7 +289,7 @@ class _CalculatorState extends State<Calculator> {
         ),
         children: payments.map((payment) {
           return ListTile(
-            contentPadding: const EdgeInsets.only(left: 32, right: 24),
+            contentPadding: EdgeInsets.only(left: 32.w, right: 24.w),
             leading: _buildInstallmentNoIcon(
               payment.installmentNo.toString(),
               payment.delayDays != null && payment.delayDays > 0
@@ -293,8 +301,9 @@ class _CalculatorState extends State<Calculator> {
             ),
             subtitle: Text(
               "약정납입일 ${payment.dueDate ?? '-'}\n실제납입일 ${payment.paidDate}",
+              style: TextStyle(fontSize: 13.sp),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+            trailing: Icon(Icons.arrow_forward_ios, size: 18.sp),
             onTap: () => _openDetailSheet(payment),
           );
         }).toList(),
@@ -309,69 +318,85 @@ class _CalculatorState extends State<Calculator> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Text(
-                  "납입내역(총인정 회차: ${schedule.totalInstallments}회)",
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Column(
-                          children: [
-                            const Text("인정회차 계산 방법"),
-                            Divider(thickness: 1),
-                          ],
-                        ),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "- 계산식\n"
-                              "약정납입일+((연체총일수 - 선납총일수)/회차)\n\n"
-                              "1. 약정납입일: 매월 납입하기로 약속한 날짜\n"
-                              "2. 연체총일수: 실제 납입일이 약정납입일보다 늦은 경우, 그 차이의 합\n"
-                              "3. 선납총일수: 실제 납입일이 약정납입일보다 빠른 경우, 그 차이의 합(최대 2년, 720일)\n"
-                              "4. 회차: 납입해야 하는 총 회차 수\n\n"
-                              "예시:\n"
-                              "- 약정납입일: 2025-01-01\n"
-                              "- 실제납입일: 2026-01-01 (365일 지연납입)\n"
-                              "- 회차: 10회\n"
-                              "- 해당회차 인정일 계산식:\n"
-                              "2025-01-01 + ((365 - 0) / 10)\n"
-                              "= 2025-02-05(36.5일 지연되어 인정)\n\n"
-                              "이 계산기는 이러한 규칙을 적용하여 각 회차별 인정회차를 계산합니다.\n\n"
-                              "* 계산 결과는 참고용이며, 실제 인정회차와 다를 수 있습니다.",
+            Flexible(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      "납입내역(총인정 회차: ${schedule.totalInstallments}회)",
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(fontSize: 16.sp),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(width: 4.w),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Column(
+                            children: [
+                              Text(
+                                "인정회차 계산 방법",
+                                style: TextStyle(fontSize: 16.sp),
+                              ),
+                              Divider(thickness: 1.h),
+                            ],
+                          ),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "- 계산식\n"
+                                  "약정납입일+((연체총일수 - 선납총일수)/회차)\n\n"
+                                  "1. 약정납입일: 매월 납입하기로 약속한 날짜\n"
+                                  "2. 연체총일수: 실제 납입일이 약정납입일보다 늦은 경우, 그 차이의 합\n"
+                                  "3. 선납총일수: 실제 납입일이 약정납입일보다 빠른 경우, 그 차이의 합(최대 2년, 720일)\n"
+                                  "4. 회차: 납입해야 하는 총 회차 수\n\n"
+                                  "예시:\n"
+                                  "- 약정납입일: 2025-01-01\n"
+                                  "- 실제납입일: 2026-01-01 (365일 지연납입)\n"
+                                  "- 회차: 10회\n"
+                                  "- 해당회차 인정일 계산식:\n"
+                                  "2025-01-01 + ((365 - 0) / 10)\n"
+                                  "= 2025-02-05(36.5일 지연되어 인정)\n\n"
+                                  "이 계산기는 이러한 규칙을 적용하여 각 회차별 인정회차를 계산합니다.\n\n"
+                                  "* 계산 결과는 참고용이며, 실제 인정회차와 다를 수 있습니다.",
+                                  style: TextStyle(fontSize: 13.sp),
+                                ),
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(
+                                "닫기",
+                                style: TextStyle(fontSize: 14.sp),
+                              ),
                             ),
                           ],
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text("닫기"),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  child: Icon(
-                    Icons.info_outline,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.primary,
+                      );
+                    },
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 18.sp,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             Tooltip(
               message: "일괄변경",
               child: IconButton(
                 icon: Icon(
                   Icons.edit_calendar,
-                  size: 18,
+                  size: 18.sp,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: () {
@@ -389,7 +414,7 @@ class _CalculatorState extends State<Calculator> {
         ),
 
         //const SizedBox(height: 4),
-        Divider(thickness: 2, color: Theme.of(context).colorScheme.primary),
+        Divider(thickness: 2.h, color: Theme.of(context).colorScheme.primary),
       ],
     );
   }
@@ -405,13 +430,13 @@ class _CalculatorState extends State<Calculator> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text("실제납입일-일괄변경"),
+              title: Text("실제납입일-일괄변경", style: TextStyle(fontSize: 16.sp)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     children: [
-                      const Text("변경 회차: "),
+                      Text("변경 회차: ", style: TextStyle(fontSize: 14.sp)),
                       DropdownButton<int>(
                         value: selectedStart,
                         items:
@@ -421,12 +446,15 @@ class _CalculatorState extends State<Calculator> {
                             ).map((v) {
                               return DropdownMenuItem(
                                 value: v,
-                                child: Text("$v"),
+                                child: Text(
+                                  "$v",
+                                  style: TextStyle(fontSize: 14.sp),
+                                ),
                               );
                             }).toList(),
                         onChanged: (v) => setState(() => selectedStart = v!),
                       ),
-                      const Text(" 부터 "),
+                      Text(" 부터 ", style: TextStyle(fontSize: 14.sp)),
                       DropdownButton<int>(
                         value: selectedEnd,
                         items:
@@ -436,22 +464,27 @@ class _CalculatorState extends State<Calculator> {
                             ).map((v) {
                               return DropdownMenuItem(
                                 value: v,
-                                child: Text("$v"),
+                                child: Text(
+                                  "$v",
+                                  style: TextStyle(fontSize: 14.sp),
+                                ),
                               );
                             }).toList(),
                         onChanged: (v) => setState(() => selectedEnd = v!),
                       ),
-                      const Text(" 까지"),
+                      Text(" 까지", style: TextStyle(fontSize: 14.sp)),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   TextFormField(
                     readOnly: true,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: "실제납입일",
+                      labelStyle: TextStyle(fontSize: 14.sp),
                       border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.calendar_today),
+                      suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
                     ),
+                    style: TextStyle(fontSize: 14.sp),
                     controller: TextEditingController(text: selectedDate ?? ''),
                     onTap: () async {
                       final picked = await showDatePicker(
@@ -475,14 +508,20 @@ class _CalculatorState extends State<Calculator> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("취소"),
+                  child: Text("취소", style: TextStyle(fontSize: 14.sp)),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
                   onPressed: () async {
                     if (selectedStart > selectedEnd) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("시작 회차는 종료 회차보다 클 수 없습니다."),
+                        SnackBar(
+                          content: Text(
+                            "시작 회차는 종료 회차보다 클 수 없습니다.",
+                            style: TextStyle(fontSize: 14.sp),
+                          ),
                           backgroundColor: Colors.redAccent,
                         ),
                       );
@@ -490,8 +529,11 @@ class _CalculatorState extends State<Calculator> {
                     }
                     if (selectedDate == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("실제납입일을 선택하세요."),
+                        SnackBar(
+                          content: Text(
+                            "실제납입일을 선택하세요.",
+                            style: TextStyle(fontSize: 14.sp),
+                          ),
                           backgroundColor: Colors.redAccent,
                         ),
                       );
@@ -506,7 +548,13 @@ class _CalculatorState extends State<Calculator> {
                       selectedDate!,
                     );
                   },
-                  child: const Text("확인"),
+                  child: Text(
+                    "확인",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontSize: 14.sp,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -532,7 +580,7 @@ class _CalculatorState extends State<Calculator> {
       final updated = await recalculateSchedule(openDate, endDate, schedule);
       setState(() {
         schedule = updated;
-        paidDate = paidDate;
+        paidDate = paidDate; // This line seems redundant, consider removing or clarifying its purpose.
       });
     } catch (e) {
       if (mounted) {
@@ -543,18 +591,29 @@ class _CalculatorState extends State<Calculator> {
 
   Widget _buildYearIcon(String year, String status) {
     Color color = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 2),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        year,
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+    return SizedBox(
+      width: 40.w,
+      height: 40.w,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+          border: Border.all(color: color, width: 2),
+        ),
+        alignment: Alignment.center,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            year,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 12.sp,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -577,8 +636,8 @@ class _CalculatorState extends State<Calculator> {
         : Colors.grey;
 
     return Container(
-      width: 54,
-      height: 36,
+      width: 54.w,
+      height: 36.h,
       decoration: BoxDecoration(
         color: recognizedColor.withValues(alpha: 0.15), // 은은한 배경색
         shape: BoxShape.rectangle,
@@ -588,8 +647,9 @@ class _CalculatorState extends State<Calculator> {
       child: Text(
         "$installmentNo회차",
         style: TextStyle(
-          color: statusColor, // 글자색
+          color: statusColor,
           fontWeight: FontWeight.bold,
+          fontSize: 14.sp,
         ),
       ),
     );
@@ -606,20 +666,21 @@ class _CalculatorState extends State<Calculator> {
           '청약 인정회차 계산기',
           style: textTheme.titleLarge?.copyWith(
             color: colors.onPrimaryContainer,
+            fontSize: 20.sp,
           ),
         ),
         backgroundColor: colors.primaryContainer,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0.w),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               _buildDateFormFields(),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               _buildGenerateButton(colors),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               if (schedule != null) ...[
                 _buildScheduleSummaryTitle(),
                 Expanded(child: ListView(children: _buildYearlyGroups())),
@@ -708,25 +769,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: TextStyle(fontSize: 14.sp)),
         backgroundColor: isError ? Colors.redAccent : null,
       ),
     );
   }
 
   Future<void> _onSave() async {
-    // PaymentScheduleRequest requestSchedule =
-    //     PaymentScheduleRequest.fromResponse(
-    //       widget.openDate,
-    //       widget.endDate,
-    //       schedule,
-    //     );
-
-    // final updatePayment = requestSchedule.payments.firstWhere(
-    //   (p) => p.installmentNo == currentPayment.installmentNo,
-    // );
-    // updatePayment.paidDate = paidDate;
-
     for (var p in schedule.payments) {
       if (p.installmentNo == currentPayment.installmentNo) {
         p.paidDate = paidDate;
@@ -735,7 +784,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     }
 
     try {
-      // final updated = await ApiServices.recalculateSchedule(requestSchedule);
       final updated = await recalculateSchedule(
         widget.openDate,
         widget.endDate,
@@ -777,7 +825,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 32.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -794,7 +842,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     child: Center(
                       child: Text(
                         "${p.installmentNo} 회차 상세",
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.copyWith(fontSize: 16.sp),
                       ),
                     ),
                   ),
@@ -811,7 +861,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 350),
                 transitionBuilder: (Widget child, Animation<double> animation) {
@@ -826,34 +876,34 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 },
                 child: Card(
                   key: ValueKey(currentIndex),
-                  margin: const EdgeInsets.only(bottom: 16.0),
+                  margin: EdgeInsets.only(bottom: 16.0.w),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Column(
                       children: [
                         _InfoRow(title: "회차", value: "${p.installmentNo}"),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(title: "약정납입일", value: p.dueDate ?? '-'),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(title: "실제납입일", value: p.paidDate ?? '-'),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(title: "지연일", value: "${p.delayDays ?? '-'}일"),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(
                           title: "지연일 합계",
                           value: "${p.totalDelayDays ?? '-'}일",
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(
                           title: "선납일",
                           value: "${p.prepaidDays ?? '-'}일",
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(
                           title: "선납일 합계",
                           value: "${p.totalPrepaidDays ?? '-'}일",
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         _InfoRow(
                           title: "납입인정일",
                           value: p.recognizedDate ?? '-',
@@ -869,9 +919,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 onTap: _pickPaidDate,
                 decoration: InputDecoration(
                   labelText: "실제 납입일-변경",
+                  labelStyle: TextStyle(fontSize: 14.sp),
                   border: OutlineInputBorder(),
-                  suffixIcon: const Icon(Icons.calendar_today),
+                  suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
                 ),
+                style: TextStyle(fontSize: 14.sp),
               ),
             ],
           ),
@@ -891,12 +943,18 @@ class _InfoRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: Theme.of(context).textTheme.bodyMedium),
         Text(
-          value,
+          title,
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ).textTheme.bodyMedium?.copyWith(fontSize: 14.sp),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 14.sp,
+          ),
         ),
       ],
     );
