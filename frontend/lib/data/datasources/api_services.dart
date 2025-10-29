@@ -1,15 +1,19 @@
 import 'dart:convert';
 
-import 'package:chungyak_box/models/payment_schdule_model.dart';
+import 'package:chungyak_box/data/models/payment_schedule_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:chungyak_box/models/calculator_model.dart';
+import 'package:chungyak_box/data/models/calculator_request_model.dart';
+import 'package:chungyak_box/data/models/payment_schedule_request_model.dart';
 
+import 'package:injectable/injectable.dart';
+
+@lazySingleton
 class ApiServices {
-  static final String baseUrl = "https://chungyak-box.onrender.com";
+  final String baseUrl = "https://chungyak-box.onrender.com";
   // static final String baseUrl = "http://127.0.0.1:8000";
 
-  static Future<PaymentScheduleResponse> generatePaymentSchedule(
-    CalculatorRequest request,
+  Future<PaymentScheduleModel> generatePaymentSchedule(
+    CalculatorRequestModel request,
   ) async {
     final url = Uri.parse("$baseUrl/api/v1/payments/normal");
     final response = await http.post(
@@ -23,11 +27,11 @@ class ApiServices {
     }
 
     final payloads = jsonDecode(response.body);
-    return PaymentScheduleResponse.fromJson(payloads);
+    return PaymentScheduleModel.fromJson(payloads);
   }
 
-  static Future<PaymentScheduleResponse> recalculateSchedule(
-    PaymentScheduleRequest request,
+  Future<PaymentScheduleModel> recalculateSchedule(
+    PaymentScheduleRequestModel request,
   ) async {
     final url = Uri.parse("$baseUrl/api/v1/payments/recalc");
     final response = await http.post(
@@ -41,6 +45,6 @@ class ApiServices {
     }
 
     final payloads = jsonDecode(response.body);
-    return PaymentScheduleResponse.fromJson(payloads);
+    return PaymentScheduleModel.fromJson(payloads);
   }
 }

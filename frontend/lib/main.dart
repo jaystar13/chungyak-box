@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:chungyak_box/ui/screens/home_screen.dart';
-import 'package:chungyak_box/ui/screens/calculator_screen.dart';
-import 'package:chungyak_box/ui/routes.dart'; // ✅ 새로 추가
+import 'package:chungyak_box/routes/app_routes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:chungyak_box/core/app_theme.dart';
 
+import 'package:chungyak_box/di/injection.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  configureDependencies();
   // 광고 초기화
   MobileAds.instance.initialize();
 
@@ -44,13 +45,8 @@ class App extends StatelessWidget {
               child: child!,
             );
           },
-
           initialRoute: Routes.home,
-          routes: {
-            Routes.home: (context) => const HomeScreen(),
-            Routes.calculator: (context) => const CalculatorScreen(),
-          },
-
+          onGenerateRoute: Routes.generateRoute,
           locale: const Locale('ko', 'KR'),
           supportedLocales: const [Locale('en', 'US'), Locale('ko', 'KR')],
           localizationsDelegates: const [

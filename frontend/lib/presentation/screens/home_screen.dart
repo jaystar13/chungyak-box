@@ -1,33 +1,18 @@
+import 'package:chungyak_box/presentation/layouts/responsive_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:chungyak_box/services/admob_services.dart';
+import 'package:chungyak_box/data/datasources/admob_services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:chungyak_box/ui/routes.dart';
+import 'package:chungyak_box/routes/app_routes.dart';
+import 'package:chungyak_box/presentation/widgets/app_drawer.dart';
 
-class MobileLayout extends StatelessWidget {
-  const MobileLayout({super.key});
-
-  void _goToCalculator(BuildContext context) {
-    Navigator.pushNamed(context, Routes.calculator);
-  }
-
-  Future<void> _sendEmail() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'rasccolii@gmail.com',
-      query: 'subject=[문의사항]&body=안녕하세요, 청약 계산소 앱에 문의사항이 있어 연락드립니다.',
-    );
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
-    }
-  }
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Scaffold(
+    final mobileBody = Scaffold(
       appBar: AppBar(
         leading: Builder(
           builder: (context) {
@@ -42,76 +27,7 @@ class MobileLayout extends StatelessWidget {
         elevation: 2,
         backgroundColor: colors.primaryContainer,
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            Container(
-              height: kToolbarHeight + MediaQuery.of(context).padding.top,
-              color: colors.primaryContainer,
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: MediaQuery.of(context).padding.top,
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.calculate, color: colors.onSurface),
-              title: Text(
-                '청약 인정회차 계산기',
-                style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _goToCalculator(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.email, color: colors.onSurface),
-              title: Text(
-                '문의하기',
-                style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                await _sendEmail();
-              },
-            ),
-            const Divider(),
-            Padding(
-              padding: EdgeInsets.all(16.0.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FutureBuilder<PackageInfo>(
-                    future: PackageInfo.fromPlatform(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        final info = snapshot.data!;
-                        return Text(
-                          '버전 ${info.version}',
-                          style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                        );
-                      } else {
-                        return Text(
-                          '버전 확인 중...',
-                          style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                        );
-                      }
-                    },
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    '© 2025 Chungyak Box',
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      drawer: const AppDrawer(),
       body: Padding(
         padding: EdgeInsets.all(16.0.w),
         child: Card(
@@ -173,7 +89,7 @@ class MobileLayout extends StatelessWidget {
                               horizontal: 24.w,
                             ),
                           ),
-                          onPressed: () => _goToCalculator(context),
+                          onPressed: () => Navigator.pushNamed(context, Routes.calculator),
                           child: Text(
                             "청약 인정회차 계산기",
                             style: TextStyle(
@@ -193,5 +109,20 @@ class MobileLayout extends StatelessWidget {
       ),
       bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
     );
+
+    final tabletBody = Scaffold(
+      appBar: AppBar(
+        title: const Text('Chungyak Box - Tablet'),
+      ),
+      body: const Center(
+        child: Placeholder(),
+      ),
+    );
+
+    return ResponsiveLayout(
+      mobileBody: mobileBody,
+      tabletBody: tabletBody,
+    );
   }
 }
+
