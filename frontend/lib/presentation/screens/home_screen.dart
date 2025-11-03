@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:chungyak_box/data/datasources/admob_services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:chungyak_box/routes/app_routes.dart';
+import 'package:chungyak_box/presentation/utils/design_system.dart';
 import 'package:chungyak_box/presentation/widgets/app_drawer.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -35,94 +36,82 @@ class HomeScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.r),
           ),
           elevation: 1,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 150.h,
-                decoration: BoxDecoration(
-                  color: colors.secondaryContainer,
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/calculator.png'),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12.r),
-                    topRight: Radius.circular(12.r),
+          clipBehavior: Clip.antiAlias,
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                // Image: Fixed square size
+                Container(
+                  width: 120.h,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/calculator.png'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(16.0.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "청약 인정회차",
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      "공공분양 당첨 전략의 필수",
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      "주택청약 인정 회차는 공공분양(일반) 당첨의 필수 조건입니다. 인정 회차 계산기를 이용하여 나의 청약 인정 회차를 미리 확인해보세요.",
-                      style: TextStyle(fontSize: 14.sp, color: Colors.black54),
-                    ),
-                    SizedBox(height: 12.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+
+                // Text content: Fills the remaining space
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 8.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween, // 상단과 하단에 요소를 배치
                       children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.primary,
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12.h,
-                              horizontal: 24.w,
+                        // Top section: Title and description
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "청약 인정회차",
+                              style: AppTextStyles.subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          onPressed: () => Navigator.pushNamed(context, Routes.calculator),
-                          child: Text(
-                            "청약 인정회차 계산기",
-                            style: TextStyle(
-                              color: colors.onPrimary,
-                              fontSize: 16.sp,
+                            SizedBox(height: 6.h),
+                            Text(
+                              "공공분양 당첨 전략의 필수 조건, 나의 청약 인정 회차를 미리 확인해보세요.",
+                              style: AppTextStyles.caption.copyWith(color: colors.onSurfaceVariant),
                             ),
-                          ),
+                          ],
+                        ),
+
+                        // Bottom section: Button
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              style: AppButtonStyles.elevatedButtonStyle(colors),
+                              onPressed: () => Navigator.pushNamed(
+                                context,
+                                Routes.calculator,
+                              ),
+                              child: Text(
+                                "계산기로 이동",
+                                style: AppTextStyles.small.copyWith(color: colors.onPrimary),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
       bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
     );
 
-    final tabletBody = Scaffold(
-      appBar: AppBar(
-        title: const Text('Chungyak Box - Tablet'),
-      ),
-      body: const Center(
-        child: Placeholder(),
-      ),
-    );
+    // final tabletBody = Scaffold(
+    //   appBar: AppBar(title: const Text('Chungyak Box - Tablet')),
+    //   body: const Center(child: Placeholder()),
+    // );
 
-    return ResponsiveLayout(
-      mobileBody: mobileBody,
-      tabletBody: tabletBody,
-    );
+    return ResponsiveLayout(mobileBody: mobileBody, tabletBody: mobileBody);
   }
 }
-

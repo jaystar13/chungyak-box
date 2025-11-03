@@ -1,5 +1,6 @@
 import 'package:chungyak_box/data/datasources/admob_services.dart';
 import 'package:chungyak_box/presentation/layouts/responsive_layout.dart';
+import 'package:chungyak_box/presentation/utils/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,16 +17,12 @@ class CalculatorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Typography.material2021().englishLike;
 
     final mobileBody = Scaffold(
       appBar: AppBar(
         title: Text(
           '청약 인정회차 계산기',
-          style: textTheme.titleLarge?.copyWith(
-            color: colors.onPrimaryContainer,
-            fontSize: 20.sp,
-          ),
+          style: AppTextStyles.title.copyWith(color: colors.onPrimaryContainer),
         ),
         backgroundColor: colors.primaryContainer,
       ),
@@ -34,7 +31,7 @@ class CalculatorScreen extends StatelessWidget {
           if (state is CalculatorError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message, style: TextStyle(fontSize: 14.sp)),
+                content: Text(state.message, style: AppTextStyles.caption),
                 backgroundColor: Colors.redAccent,
               ),
             );
@@ -68,19 +65,23 @@ class CalculatorScreen extends StatelessWidget {
       bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
     );
 
-    final tabletBody = Scaffold(
-      appBar: AppBar(title: const Text('청약 인정회차 계산기 - Tablet')),
-      body: const Center(child: Placeholder()),
-    );
+    // final tabletBody = Scaffold(
+    //   appBar: AppBar(title: const Text('청약 인정회차 계산기 - Tablet')),
+    //   body: const Center(child: Placeholder()),
+    // );
 
-    return ResponsiveLayout(mobileBody: mobileBody, tabletBody: tabletBody);
+    return ResponsiveLayout(mobileBody: mobileBody, tabletBody: mobileBody);
   }
 }
 
 class _DateFormFields extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
 
-  Future<void> _pickDate(BuildContext context, Function(DateTime) onPicked, DateTime? initialDate) async {
+  Future<void> _pickDate(
+    BuildContext context,
+    Function(DateTime) onPicked,
+    DateTime? initialDate,
+  ) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime.now(),
@@ -117,8 +118,13 @@ class _DateFormFields extends StatelessWidget {
                   suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
                 ),
                 controller: openDateController,
-                onTap: () => _pickDate(context, (d) => context.read<CalculatorBloc>().add(OpenDateChanged(d)), state.openDate),
-                validator: (value) => (state.openDate == null) ? '계산 시작일을 선택하세요' : null,
+                onTap: () => _pickDate(
+                  context,
+                  (d) => context.read<CalculatorBloc>().add(OpenDateChanged(d)),
+                  state.openDate,
+                ),
+                validator: (value) =>
+                    (state.openDate == null) ? '계산 시작일을 선택하세요' : null,
               ),
               SizedBox(height: 16.h),
               TextFormField(
@@ -129,7 +135,11 @@ class _DateFormFields extends StatelessWidget {
                   suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
                 ),
                 controller: endDateController,
-                onTap: () => _pickDate(context, (d) => context.read<CalculatorBloc>().add(EndDateChanged(d)), state.endDate),
+                onTap: () => _pickDate(
+                  context,
+                  (d) => context.read<CalculatorBloc>().add(EndDateChanged(d)),
+                  state.endDate,
+                ),
               ),
             ],
           ),
@@ -148,21 +158,21 @@ class _GenerateButton extends StatelessWidget {
         return SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: colors.primary),
+            style: AppButtonStyles.elevatedButtonStyle(colors),
             onPressed: () {
               if (state.openDate != null) {
                 context.read<CalculatorBloc>().add(
-                      GenerateSchedule(
-                        openDate: state.openDate!,
-                        dueDay: 1,
-                        endDate: state.endDate,
-                      ),
-                    );
+                  GenerateSchedule(
+                    openDate: state.openDate!,
+                    dueDay: 1,
+                    endDate: state.endDate,
+                  ),
+                );
               }
             },
             child: Text(
               "생성",
-              style: TextStyle(color: colors.onPrimary, fontSize: 16.sp),
+              style: AppTextStyles.body.copyWith(color: colors.onPrimary),
             ),
           ),
         );
@@ -206,7 +216,7 @@ class _ScheduleSummaryTitle extends StatelessWidget {
                   Flexible(
                     child: Text(
                       "납입내역(총인정 회차: ${schedule.totalInstallments}회)",
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 16.sp),
+                      style: AppTextStyles.body,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -220,7 +230,7 @@ class _ScheduleSummaryTitle extends StatelessWidget {
                             children: [
                               Text(
                                 "인정회차 계산 방법",
-                                style: TextStyle(fontSize: 16.sp),
+                                style: AppTextStyles.body,
                               ),
                               Divider(thickness: 1.h),
                             ],
@@ -245,7 +255,7 @@ class _ScheduleSummaryTitle extends StatelessWidget {
                                   "= 2025-02-05(36.5일 지연되어 인정)\n\n"
                                   "이 계산기는 이러한 규칙을 적용하여 각 회차별 인정회차를 계산합니다.\n\n"
                                   "* 계산 결과는 참고용이며, 실제 인정회차와 다를 수 있습니다.",
-                                  style: TextStyle(fontSize: 13.sp),
+                                  style: AppTextStyles.small,
                                 ),
                               ],
                             ),
@@ -255,7 +265,7 @@ class _ScheduleSummaryTitle extends StatelessWidget {
                               onPressed: () => Navigator.of(context).pop(),
                               child: Text(
                                 "닫기",
-                                style: TextStyle(fontSize: 14.sp),
+                                style: AppTextStyles.caption,
                               ),
                             ),
                           ],
@@ -315,49 +325,53 @@ class __BulkEditDialogState extends State<_BulkEditDialog> {
   @override
   void initState() {
     super.initState();
-    final payments = widget.schedule.payments..sort((a, b) => a.installmentNo.compareTo(b.installmentNo));
+    final payments = widget.schedule.payments
+      ..sort((a, b) => a.installmentNo.compareTo(b.installmentNo));
     selectedStart = payments.first.installmentNo;
     selectedEnd = payments.last.installmentNo;
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return AlertDialog(
-      title: Text("실제납입일-일괄변경", style: TextStyle(fontSize: 16.sp)),
+      title: Text("실제납입일-일괄변경", style: AppTextStyles.body),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Text("변경 회차: ", style: TextStyle(fontSize: 14.sp)),
+              Text("변경 회차: ", style: AppTextStyles.caption),
               DropdownButton<int>(
                 value: selectedStart,
-                items: List.generate(
-                  selectedEnd - selectedStart + 1,
-                  (i) => selectedStart + i,
-                ).map((v) {
-                  return DropdownMenuItem(
-                    value: v,
-                    child: Text("$v", style: TextStyle(fontSize: 14.sp)),
-                  );
-                }).toList(),
+                items:
+                    List.generate(
+                      selectedEnd - selectedStart + 1,
+                      (i) => selectedStart + i,
+                    ).map((v) {
+                      return DropdownMenuItem(
+                        value: v,
+                        child: Text("$v", style: AppTextStyles.caption),
+                      );
+                    }).toList(),
                 onChanged: (v) => setState(() => selectedStart = v!),
               ),
-              Text(" 부터 ", style: TextStyle(fontSize: 14.sp)),
+              Text(" 부터 ", style: AppTextStyles.caption),
               DropdownButton<int>(
                 value: selectedEnd,
-                items: List.generate(
-                  widget.schedule.payments.length,
-                  (i) => widget.schedule.payments[i].installmentNo,
-                ).where((v) => v >= selectedStart).map((v) {
-                  return DropdownMenuItem(
-                    value: v,
-                    child: Text("$v", style: TextStyle(fontSize: 14.sp)),
-                  );
-                }).toList(),
+                items:
+                    List.generate(
+                      widget.schedule.payments.length,
+                      (i) => widget.schedule.payments[i].installmentNo,
+                    ).where((v) => v >= selectedStart).map((v) {
+                      return DropdownMenuItem(
+                        value: v,
+                        child: Text("$v", style: AppTextStyles.caption),
+                      );
+                    }).toList(),
                 onChanged: (v) => setState(() => selectedEnd = v!),
               ),
-              Text(" 까지", style: TextStyle(fontSize: 14.sp)),
+              Text(" 까지", style: AppTextStyles.caption),
             ],
           ),
           SizedBox(height: 16.h),
@@ -365,11 +379,11 @@ class __BulkEditDialogState extends State<_BulkEditDialog> {
             readOnly: true,
             decoration: InputDecoration(
               labelText: "실제납입일",
-              labelStyle: TextStyle(fontSize: 14.sp),
+              labelStyle: AppTextStyles.caption,
               border: OutlineInputBorder(),
               suffixIcon: Icon(Icons.calendar_today, size: 20.sp),
             ),
-            style: TextStyle(fontSize: 14.sp),
+            style: AppTextStyles.caption,
             controller: TextEditingController(text: selectedDate ?? ''),
             onTap: () async {
               final picked = await showDatePicker(
@@ -390,17 +404,18 @@ class __BulkEditDialogState extends State<_BulkEditDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text("취소", style: TextStyle(fontSize: 14.sp)),
+          child: Text("취소", style: AppTextStyles.caption),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
+          style: AppButtonStyles.elevatedButtonStyle(colors),
           onPressed: () {
             if (selectedStart > selectedEnd) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text("시작 회차는 종료 회차보다 클 수 없습니다.", style: TextStyle(fontSize: 14.sp)),
+                  content: Text(
+                    "시작 회차는 종료 회차보다 클 수 없습니다.",
+                    style: AppTextStyles.caption,
+                  ),
                   backgroundColor: Colors.redAccent,
                 ),
               );
@@ -409,7 +424,10 @@ class __BulkEditDialogState extends State<_BulkEditDialog> {
             if (selectedDate == null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text("실제납입일을 선택하세요.", style: TextStyle(fontSize: 14.sp)),
+                  content: Text(
+                    "실제납입일을 선택하세요.",
+                    style: AppTextStyles.caption,
+                  ),
                   backgroundColor: Colors.redAccent,
                 ),
               );
@@ -420,7 +438,8 @@ class __BulkEditDialogState extends State<_BulkEditDialog> {
             final currentState = bloc.state;
 
             final updatedPayments = widget.schedule.payments.map((p) {
-              if (p.installmentNo >= selectedStart && p.installmentNo <= selectedEnd) {
+              if (p.installmentNo >= selectedStart &&
+                  p.installmentNo <= selectedEnd) {
                 return PaymentEntity(
                   installmentNo: p.installmentNo,
                   dueDate: p.dueDate,
@@ -443,27 +462,25 @@ class __BulkEditDialogState extends State<_BulkEditDialog> {
               payments: updatedPayments,
             );
 
-            bloc.add(RecalculateSchedule(
-              openDate: currentState.openDate!,
-              endDate: currentState.endDate,
-              schedule: updatedSchedule,
-            ));
+            bloc.add(
+              RecalculateSchedule(
+                openDate: currentState.openDate!,
+                endDate: currentState.endDate,
+                schedule: updatedSchedule,
+              ),
+            );
 
             Navigator.of(context).pop();
           },
           child: Text(
             "확인",
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary,
-              fontSize: 14.sp,
-            ),
+            style: AppTextStyles.caption.copyWith(color: colors.onPrimary),
           ),
         ),
       ],
     );
   }
 }
-
 
 class _YearlyGroupedList extends StatelessWidget {
   final PaymentScheduleEntity schedule;
@@ -476,7 +493,9 @@ class _YearlyGroupedList extends StatelessWidget {
       'totalPrepaidDays': payments.fold(0, (sum, p) => sum + p.prepaidDays),
       'totalDelayDayCount': payments.where((p) => p.delayDays > 0).length,
       'totalPrepaidDayCount': payments.where((p) => p.prepaidDays > 0).length,
-      'totalNormalCount': payments.where((p) => p.delayDays == 0 && p.prepaidDays == 0).length,
+      'totalNormalCount': payments
+          .where((p) => p.delayDays == 0 && p.prepaidDays == 0)
+          .length,
     };
   }
 
@@ -488,80 +507,81 @@ class _YearlyGroupedList extends StatelessWidget {
       byYear.putIfAbsent(year, () => []).add(p);
     }
 
-    return ListView(children: byYear.entries.map((entry) {
-      final year = entry.key;
-      final payments = entry.value;
-      final stats = _calculateYearlyStats(payments);
+    return ListView(
+      children: byYear.entries.map((entry) {
+        final year = entry.key;
+        final payments = entry.value;
+        final stats = _calculateYearlyStats(payments);
 
-      return ExpansionTile(
-        leading: _buildYearIcon(context, year, "normal"),
-        shape: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.secondary,
-            width: 0.5.w,
+        return ExpansionTile(
+          leading: _buildYearIcon(context, year, "normal"),
+          shape: Border(
+            bottom: BorderSide(
+              color: Theme.of(context).colorScheme.secondary,
+              width: 0.5.w,
+            ),
           ),
-        ),
-        title: Padding(
-          padding: EdgeInsets.all(8.0.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "정상 ${stats['totalNormalCount']}회",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 14.sp,
+          title: Padding(
+            padding: EdgeInsets.all(8.0.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "정상 ${stats['totalNormalCount']}회",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      "지연 ${stats['totalDelayDayCount']}회",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                        fontSize: 14.sp,
+                    Expanded(
+                      child: Text(
+                        "지연 ${stats['totalDelayDayCount']}회",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      "선납 ${stats['totalPrepaidDayCount']}회",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        fontSize: 14.sp,
+                    Expanded(
+                      child: Text(
+                        "선납 ${stats['totalPrepaidDayCount']}회",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          children: payments.map((payment) {
+            return ListTile(
+              contentPadding: EdgeInsets.only(left: 32.w, right: 24.w),
+              leading: _buildInstallmentNoIcon(
+                context,
+                payment.installmentNo.toString(),
+                payment.delayDays > 0
+                    ? "delay"
+                    : (payment.prepaidDays > 0 ? "prepaid" : "normal"),
+                payment.isRecognized,
               ),
-            ],
-          ),
-        ),
-        children: payments.map((payment) {
-          return ListTile(
-            contentPadding: EdgeInsets.only(left: 32.w, right: 24.w),
-            leading: _buildInstallmentNoIcon(
-              context,
-              payment.installmentNo.toString(),
-              payment.delayDays > 0 ? "delay" : (payment.prepaidDays > 0 ? "prepaid" : "normal"),
-              payment.isRecognized,
-            ),
-            subtitle: Text(
-              "약정납입일 ${payment.dueDate}\n실제납입일 ${payment.paidDate}",
-              style: TextStyle(fontSize: 13.sp),
-            ),
-            trailing: Icon(Icons.arrow_forward_ios, size: 18.sp),
-            onTap: () => _openDetailSheet(context, schedule, payment),
-          );
-        }).toList(),
-      );
-    }).toList());
+              subtitle: Text(
+                "약정납입일 ${payment.dueDate}\n실제납입일 ${payment.paidDate}",
+                style: AppTextStyles.small,
+              ),
+              trailing: Icon(Icons.arrow_forward_ios, size: 18.sp),
+              onTap: () => _openDetailSheet(context, schedule, payment),
+            );
+          }).toList(),
+        );
+      }).toList(),
+    );
   }
 
   Widget _buildYearIcon(BuildContext context, String year, String status) {
@@ -582,10 +602,9 @@ class _YearlyGroupedList extends StatelessWidget {
             year,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: AppTextStyles.small.copyWith(
               color: color,
               fontWeight: FontWeight.bold,
-              fontSize: 12.sp,
             ),
           ),
         ),
@@ -599,13 +618,15 @@ class _YearlyGroupedList extends StatelessWidget {
     String status,
     bool isRecognized,
   ) {
-    Color recognizedColor = isRecognized ? Theme.of(context).colorScheme.primary : Colors.grey.shade400;
+    Color recognizedColor = isRecognized
+        ? Theme.of(context).colorScheme.primary
+        : Colors.grey.shade400;
     Color statusColor = isRecognized
         ? (status == "delay"
-            ? Theme.of(context).colorScheme.error
-            : status == "prepaid"
-                ? Theme.of(context).colorScheme.tertiary
-                : Theme.of(context).colorScheme.primary)
+              ? Theme.of(context).colorScheme.error
+              : status == "prepaid"
+              ? Theme.of(context).colorScheme.tertiary
+              : Theme.of(context).colorScheme.primary)
         : Colors.grey;
 
     return Container(
@@ -617,18 +638,24 @@ class _YearlyGroupedList extends StatelessWidget {
         border: Border.all(color: recognizedColor, width: 2),
       ),
       alignment: Alignment.center,
-      child: Text(
-        "$installmentNo회차",
-        style: TextStyle(
-          color: statusColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 14.sp,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          "$installmentNo회차",
+          style: AppTextStyles.caption.copyWith(
+            color: statusColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
   }
 
-  void _openDetailSheet(BuildContext context, PaymentScheduleEntity schedule, PaymentEntity payment) {
+  void _openDetailSheet(
+    BuildContext context,
+    PaymentScheduleEntity schedule,
+    PaymentEntity payment,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
