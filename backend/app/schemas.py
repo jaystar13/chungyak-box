@@ -1,5 +1,7 @@
 from datetime import date
-from typing import List
+from enum import Enum
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
@@ -38,3 +40,53 @@ class PaymentRespose(BaseModel):
     total_delay_days: int = 0
     total_prepaid_days: int = 0
     payments: List[PaymentRecord]
+
+
+class PaymentAmountOption(str, Enum):
+    standard = "standard"
+    maximum = "maximum"
+
+
+class CustomPaymentInput(BaseModel):
+    installment_no: int
+    paid_date: date
+
+
+class RecognitionCalculatorRequest(BaseModel):
+    payment_day: int
+    start_date: date
+    end_date: date
+    payment_amount_option: PaymentAmountOption
+    standard_payment_amount: Optional[int] = None
+    payments: Optional[List[CustomPaymentInput]] = None
+
+
+class PaymentStatus(str, Enum):
+    normal = "정상"
+    delay = "지연"
+    prepaid = "선납"
+
+
+class RecognitionRoundRecord(BaseModel):
+    installment_no: int
+    due_date: date
+    paid_date: date
+    recognized_date: date
+    delay_days: int
+    total_delay_days: int
+    prepaid_days: int
+    total_prepaid_days: int
+    status: PaymentStatus
+    is_recognized: bool
+    paid_amount: int
+    recognized_amount_for_round: int
+
+
+class RecognitionCalculationResult(BaseModel):
+    payment_day: int
+    start_date: date
+    end_date: date
+    recognized_rounds: int
+    unrecognized_rounds: int
+    total_recognized_amount: int
+    details: List[RecognitionRoundRecord]

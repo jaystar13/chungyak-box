@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from app.core.config import settings
 from app import crud
-from app.tests.utils.utils import random_lower_string
+from app.core.config import settings
 from app.models import UserCreate
+from app.tests.utils.utils import random_lower_string
 
 
 def user_authentication_headers(

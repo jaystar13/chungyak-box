@@ -1,8 +1,17 @@
 from fastapi import APIRouter
 
-from app.services.recognized_date_calc import generate_normal_payments, recalc_payments
-from app.schemas import NormalRequest, PaymentRespose, RecalcRequest
-
+from app.schemas import (
+    NormalRequest,
+    PaymentRespose,
+    RecalcRequest,
+    RecognitionCalculationResult,
+    RecognitionCalculatorRequest,
+)
+from app.services.recognized_date_calc import (
+    calculate_recognition_details,
+    generate_normal_payments,
+    recalc_payments,
+)
 
 router = APIRouter(tags=["payment-schedule"])
 
@@ -19,6 +28,11 @@ def create_normal_schedule(request: NormalRequest) -> PaymentRespose:
 def recalc_schedule(request: RecalcRequest) -> PaymentRespose:
     payments = recalc_payments(request.payments)
     return _build_payment_response(payments, request.end_date)
+
+
+@router.post("/payments/calculate-recognition", response_model=RecognitionCalculationResult)
+def calculate_recognition(request: RecognitionCalculatorRequest) -> RecognitionCalculationResult:
+    return calculate_recognition_details(request)
 
 
 def _build_payment_response(payments, current_date) -> PaymentRespose:

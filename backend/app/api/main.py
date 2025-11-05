@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
+from app.api.routes import login, payment_schedule, private
 from app.core.config import settings
-from app.api.routes import private, login, payment_schedule
 
 api_router = APIRouter()
 api_router.include_router(login.router)

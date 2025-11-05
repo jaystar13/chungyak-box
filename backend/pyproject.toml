@@ -21,3 +21,18 @@ dependencies = [
     "uvicorn>=0.35.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6.2",
+    "mypy>=1.11.2",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
