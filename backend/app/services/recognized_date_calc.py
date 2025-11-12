@@ -2,8 +2,10 @@ from datetime import date, timedelta
 from typing import Dict, List
 
 from dateutil.relativedelta import relativedelta
+from fastapi import HTTPException
 
 from app.schemas import (
+    CustomPaymentInput,
     PaymentAmountOption,
     PaymentInput,
     PaymentRecord,
@@ -100,7 +102,6 @@ RECOGNITION_AMOUNT_CHANGE_DATE = date(2024, 11, 1)
 def calculate_recognition_details(
     request: RecognitionCalculatorRequest,
 ) -> RecognitionCalculationResult:
-    today = date.today()
     all_rounds_data: List[Dict] = []
     installment_no_counter = 1
 
@@ -108,10 +109,10 @@ def calculate_recognition_details(
     end_month_start = request.end_date.replace(day=1)
 
     # Step A: Generate Base Schedule & Step B: Apply Custom Payments (initial setup)
-    custom_payments_map: Dict[int, date] = {}
+    custom_payments_map: Dict[int, CustomPaymentInput] = {}
     if request.payments:
         for cp in request.payments:
-            custom_payments_map[cp.installment_no] = cp.paid_date
+            custom_payments_map[cp.installment_no] = cp
 
     while current_month_start <= end_month_start:
         due_date = date(
@@ -121,11 +122,14 @@ def calculate_recognition_details(
         if due_date > request.end_date:
             break
 
-        paid_date = custom_payments_map.get(installment_no_counter, due_date)
+        custom_payment_for_round = custom_payments_map.get(installment_no_counter)
+        paid_date = custom_payment_for_round.paid_date if custom_payment_for_round else due_date
 
         # Determine paid_amount for this round
         paid_amount = 0
-        if request.payment_amount_option == PaymentAmountOption.standard:
+        if custom_payment_for_round and custom_payment_for_round.paid_amount is not None:
+            paid_amount = custom_payment_for_round.paid_amount
+        elif request.payment_amount_option == PaymentAmountOption.standard:
             paid_amount = request.standard_payment_amount or 0
         elif request.payment_amount_option == PaymentAmountOption.maximum:
             if paid_date < RECOGNITION_AMOUNT_CHANGE_DATE:
@@ -172,10 +176,9 @@ def calculate_recognition_details(
             total_delay_days += delay_days_current
         elif delay_days_current < 0:
             prepaid_days_current = abs(delay_days_current)
+            if prepaid_days_current > 721:
+                raise HTTPException(status_code=400, detail="회차별 선납일수는 최대 2년(721일)을 초과할 수 없습니다.")
             total_prepaid_days += prepaid_days_current
-
-        if total_prepaid_days > 721:
-            raise ValueError("선납일수는 최대 2년(721일)을 초과할 수 없습니다.")
 
         # This adjustment logic is from the original recalc_payments
         # It seems to apply a cumulative adjustment based on total delay/prepaid days
@@ -205,7 +208,7 @@ def calculate_recognition_details(
     detailed_records: List[RecognitionRoundRecord] = []
 
     for round_data in all_rounds_data:
-        is_recognized = round_data["recognized_date"] <= today
+        is_recognized = round_data["recognized_date"] <= date.today()
 
         recognized_amount_for_round = 0
         if is_recognized:

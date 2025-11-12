@@ -203,5 +203,46 @@ def test_calculate_recognition_details_prepayment_over_limit_raises_error():
     )
 
     # When/Then: The calculation should raise a ValueError
-    with pytest.raises(ValueError, match="선납일수는 최대 2년\(721일\)을 초과할 수 없습니다."):
+    with pytest.raises(ValueError) as excinfo:
         calculate_recognition_details(request)
+    assert str(excinfo.value) == "선납일수는 최대 2년(721일)을 초과할 수 없습니다."
+
+
+def test_calculate_recognition_details_with_custom_paid_amount():
+    # Given: A request with custom paid amounts for specific installments
+    custom_payments = [
+        CustomPaymentInput(installment_no=1, paid_date=date(2024, 1, 10), paid_amount=70000), # Custom amount
+        CustomPaymentInput(installment_no=2, paid_date=date(2024, 2, 10), paid_amount=120000), # Custom amount
+        CustomPaymentInput(installment_no=3, paid_date=date(2024, 3, 10), paid_amount=None), # Fallback to standard/maximum
+    ]
+    request = RecognitionCalculatorRequest(
+        payment_day=10,
+        start_date=date(2024, 1, 1),
+        end_date=date(2024, 3, 31),
+        payment_amount_option=PaymentAmountOption.standard,
+        standard_payment_amount=100000,
+        payments=custom_payments,
+    )
+
+    # When: The calculation is performed
+    result = calculate_recognition_details(request)
+
+    # Then: The recognized amounts should reflect the custom paid amounts
+    assert len(result.details) == 3
+
+    # Round 1: Custom paid_amount 70000
+    assert result.details[0].installment_no == 1
+    assert result.details[0].paid_amount == 70000
+    assert result.details[0].recognized_amount_for_round == 70000
+
+    # Round 2: Custom paid_amount 120000 (capped at 100000 for standard option before Nov 2024)
+    assert result.details[1].installment_no == 2
+    assert result.details[1].paid_amount == 120000
+    assert result.details[1].recognized_amount_for_round == 100000 # Capped by max_allowed_amount
+
+    # Round 3: No custom paid_amount, falls back to standard_payment_amount
+    assert result.details[2].installment_no == 3
+    assert result.details[2].paid_amount == 100000
+    assert result.details[2].recognized_amount_for_round == 100000
+
+    assert result.total_recognized_amount == (70000 + 100000 + 100000)

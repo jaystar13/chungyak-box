@@ -45,11 +45,13 @@ class PaymentRespose(BaseModel):
 class PaymentAmountOption(str, Enum):
     standard = "standard"
     maximum = "maximum"
+    custom = "custom"
 
 
 class CustomPaymentInput(BaseModel):
     installment_no: int
     paid_date: date
+    paid_amount: Optional[int] = None
 
 
 class RecognitionCalculatorRequest(BaseModel):
