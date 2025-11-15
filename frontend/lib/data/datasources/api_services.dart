@@ -4,6 +4,8 @@ import 'package:chungyak_box/data/models/payment_schedule_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:chungyak_box/data/models/calculator_request_model.dart';
 import 'package:chungyak_box/data/models/payment_schedule_request_model.dart';
+import 'package:chungyak_box/data/models/recognition_calculator_request_model.dart';
+import 'package:chungyak_box/data/models/recognition_calculation_result_model.dart';
 
 import 'package:injectable/injectable.dart';
 
@@ -46,5 +48,23 @@ class ApiServices {
 
     final payloads = jsonDecode(response.body);
     return PaymentScheduleModel.fromJson(payloads);
+  }
+
+  Future<RecognitionCalculationResultModel> calculateRecognition(
+    RecognitionCalculatorRequestModel request,
+  ) async {
+    final url = Uri.parse("$baseUrl/api/v1/payments/calculate-recognition");
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to calculate recognition");
+    }
+
+    final payloads = jsonDecode(response.body);
+    return RecognitionCalculationResultModel.fromJson(payloads);
   }
 }

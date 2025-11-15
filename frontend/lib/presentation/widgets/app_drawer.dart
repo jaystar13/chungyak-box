@@ -31,8 +31,16 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Define a breakpoint for tablet
+    const tabletBreakpoint = 600;
+
+    // Set drawer width based on screen size
+    final double drawerWidth = screenWidth >= tabletBreakpoint ? 400 : 300;
 
     return Drawer(
+      width: drawerWidth,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -49,7 +57,7 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.calculate, color: colors.onSurface),
             title: Text(
-              '청약 인정회차 계산기',
+              '청약 인정금액 계산기',
               style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
             ),
             onTap: () => _goToCalculator(context),

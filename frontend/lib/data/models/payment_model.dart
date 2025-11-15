@@ -8,11 +8,13 @@ class PaymentModel {
   final int totalPrepaidDays;
   final String recognizedDate;
   final bool isRecognized;
+  final int paidAmount;
 
   PaymentModel({
     required this.installmentNo,
     required this.dueDate,
     required this.paidDate,
+    required this.paidAmount,
     required this.delayDays,
     required this.totalDelayDays,
     required this.prepaidDays,
@@ -32,6 +34,7 @@ class PaymentModel {
       totalPrepaidDays: json['total_prepaid_days'],
       recognizedDate: json['recognized_date'],
       isRecognized: json['is_recognized'],
+      paidAmount: json['paid_amount'],
     );
   }
 
@@ -46,6 +49,7 @@ class PaymentModel {
       'total_prepaid_days': totalPrepaidDays,
       'recognized_date': recognizedDate,
       'is_recognized': isRecognized,
+      'paid_amount': paidAmount,
     };
   }
 }

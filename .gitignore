@@ -66,3 +66,5 @@ pubspec.lock
 *.pid
 *.seed
 *.pid.lock
+
+*.egg-info/

@@ -15,6 +15,7 @@ extension PaymentMapper on PaymentModel {
       totalPrepaidDays: totalPrepaidDays,
       recognizedDate: recognizedDate,
       isRecognized: isRecognized,
+      paidAmount: paidAmount,
     );
   }
 }
@@ -42,6 +43,7 @@ extension PaymentEntityMapper on PaymentEntity {
       totalPrepaidDays: totalPrepaidDays,
       recognizedDate: recognizedDate,
       isRecognized: isRecognized,
+      paidAmount: paidAmount,
     );
   }
 }

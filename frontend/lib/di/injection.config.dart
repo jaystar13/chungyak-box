@@ -14,6 +14,8 @@ import 'package:chungyak_box/data/repositories/calculator_repository_impl.dart'
     as _i277;
 import 'package:chungyak_box/domain/repositories/calculator_repository.dart'
     as _i823;
+import 'package:chungyak_box/domain/usecases/calculate_recognition_use_case.dart'
+    as _i61;
 import 'package:chungyak_box/domain/usecases/generate_payment_schedule_use_case.dart'
     as _i344;
 import 'package:chungyak_box/domain/usecases/recalculate_schedule_use_case.dart'
@@ -34,6 +36,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i823.CalculatorRepository>(
       () => _i277.CalculatorRepositoryImpl(gh<_i879.ApiServices>()),
     );
+    gh.factory<_i61.CalculateRecognitionUseCase>(
+      () => _i61.CalculateRecognitionUseCase(gh<_i823.CalculatorRepository>()),
+    );
     gh.factory<_i344.GeneratePaymentScheduleUseCase>(
       () => _i344.GeneratePaymentScheduleUseCase(
         gh<_i823.CalculatorRepository>(),
@@ -46,6 +51,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i365.CalculatorBloc(
         gh<_i344.GeneratePaymentScheduleUseCase>(),
         gh<_i204.RecalculateScheduleUseCase>(),
+        gh<_i61.CalculateRecognitionUseCase>(),
       ),
     );
     return this;

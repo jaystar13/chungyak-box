@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:chungyak_box/domain/entities/payment_schedule_entity.dart';
+import 'package:chungyak_box/domain/entities/recognition_calculation_result_entity.dart';
 
 abstract class CalculatorState extends Equatable {
   final DateTime? openDate;
@@ -26,6 +27,15 @@ class CalculatorLoaded extends CalculatorState {
 
   @override
   List<Object?> get props => [schedule, openDate, endDate];
+}
+
+class RecognitionCalculated extends CalculatorState {
+  final RecognitionCalculationResultEntity result;
+
+  const RecognitionCalculated(this.result, {super.openDate, super.endDate});
+
+  @override
+  List<Object?> get props => [result, openDate, endDate];
 }
 
 class CalculatorError extends CalculatorState {

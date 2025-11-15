@@ -10,11 +10,13 @@ class PaymentEntity extends Equatable {
   final int totalPrepaidDays;
   final String recognizedDate;
   final bool isRecognized;
+  final int paidAmount;
 
   const PaymentEntity({
     required this.installmentNo,
     required this.dueDate,
     required this.paidDate,
+    required this.paidAmount,
     required this.delayDays,
     required this.totalDelayDays,
     required this.prepaidDays,
@@ -28,6 +30,7 @@ class PaymentEntity extends Equatable {
         installmentNo,
         dueDate,
         paidDate,
+        paidAmount,
         delayDays,
         totalDelayDays,
         prepaidDays,
