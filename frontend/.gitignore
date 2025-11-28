@@ -1,0 +1,16 @@
+# Miscellaneous
+*.DS_Store
+.env
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+build/
+
+# IDE files
+.idea/
+*.iml
+
+# Log files
+*.log
