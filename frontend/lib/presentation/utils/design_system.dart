@@ -12,27 +12,18 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
   );
 
-  static final TextStyle body = TextStyle(
-    fontSize: 16.sp,
-  );
+  static final TextStyle body = TextStyle(fontSize: 16.sp);
 
-  static final TextStyle caption = TextStyle(
-    fontSize: 14.sp,
-  );
+  static final TextStyle caption = TextStyle(fontSize: 14.sp);
 
-  static final TextStyle small = TextStyle(
-    fontSize: 12.sp,
-  );
+  static final TextStyle small = TextStyle(fontSize: 12.sp);
 }
 
 class AppButtonStyles {
   static ButtonStyle elevatedButtonStyle(ColorScheme colors) {
     return ElevatedButton.styleFrom(
       backgroundColor: colors.primary,
-      padding: EdgeInsets.symmetric(
-        vertical: 8.h, 
-        horizontal: 16.w,
-      ),
+      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
       textStyle: AppTextStyles.caption.copyWith(color: colors.onPrimary),
     );
   }

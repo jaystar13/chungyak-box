@@ -21,8 +21,10 @@ class RecognitionCalculatorRequestModel {
       'start_date': startDate,
       'end_date': endDate,
       'payment_amount_option': paymentAmountOption,
-      if (standardPaymentAmount != null) 'standard_payment_amount': standardPaymentAmount,
-      if (payments != null) 'payments': payments!.map((e) => e.toJson()).toList(),
+      if (standardPaymentAmount != null)
+        'standard_payment_amount': standardPaymentAmount,
+      if (payments != null)
+        'payments': payments!.map((e) => e.toJson()).toList(),
     };
   }
 }

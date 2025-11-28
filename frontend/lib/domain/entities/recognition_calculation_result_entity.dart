@@ -22,12 +22,12 @@ class RecognitionCalculationResultEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        paymentDay,
-        startDate,
-        endDate,
-        recognizedRounds,
-        unrecognizedRounds,
-        totalRecognizedAmount,
-        details,
-      ];
+    paymentDay,
+    startDate,
+    endDate,
+    recognizedRounds,
+    unrecognizedRounds,
+    totalRecognizedAmount,
+    details,
+  ];
 }

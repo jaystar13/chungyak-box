@@ -31,17 +31,17 @@ class RecognitionRoundRecordEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        installmentNo,
-        dueDate,
-        paidDate,
-        recognizedDate,
-        delayDays,
-        totalDelayDays,
-        prepaidDays,
-        totalPrepaidDays,
-        status,
-        isRecognized,
-        paidAmount,
-        recognizedAmountForRound,
-      ];
+    installmentNo,
+    dueDate,
+    paidDate,
+    recognizedDate,
+    delayDays,
+    totalDelayDays,
+    prepaidDays,
+    totalPrepaidDays,
+    status,
+    isRecognized,
+    paidAmount,
+    recognizedAmountForRound,
+  ];
 }

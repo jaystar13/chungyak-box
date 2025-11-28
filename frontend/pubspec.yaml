@@ -55,6 +55,10 @@ dependencies:
   intl: ^0.20.2
   currency_text_input_formatter: ^2.3.0
   month_picker_dialog: ^6.6.0
+  google_sign_in: ^7.2.0
+  google_sign_in_web: ^1.1.0
+  flutter_svg: ^2.0.10
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:

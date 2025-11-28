@@ -43,7 +43,10 @@ class PaymentDetailBottomSheet extends StatefulWidget {
           value: bloc,
           child: AlertDialog(
             contentPadding: EdgeInsets.zero,
-            insetPadding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
+            insetPadding: EdgeInsets.symmetric(
+              horizontal: 40.w,
+              vertical: 24.h,
+            ),
             content: SizedBox(
               width: 600.w, // Set a specific width for the dialog on tablets
               child: PaymentDetailBottomSheet(
@@ -415,17 +418,19 @@ class _PaymentDetailBottomSheetState extends State<PaymentDetailBottomSheet> {
                         ),
                         style: TextStyle(fontSize: 14.sp),
                         textAlign: TextAlign.right,
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    paidAmount = int.tryParse(
-                                                          value.replaceAll(RegExp(r'[^0-9]'), ''),
-                                                        ) ??
-                                                        0;
-                                                  });
-                                                  _commitCurrentChanges();
-                                                },
-                                                onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
-                                              ),
+                        onChanged: (value) {
+                          setState(() {
+                            paidAmount =
+                                int.tryParse(
+                                  value.replaceAll(RegExp(r'[^0-9]'), ''),
+                                ) ??
+                                0;
+                          });
+                          _commitCurrentChanges();
+                        },
+                        onFieldSubmitted: (_) =>
+                            FocusScope.of(context).unfocus(),
+                      ),
                       SizedBox(height: 24.h),
                       SizedBox(
                         width: double.infinity,

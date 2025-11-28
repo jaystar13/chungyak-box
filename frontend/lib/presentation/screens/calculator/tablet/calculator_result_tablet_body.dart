@@ -40,7 +40,6 @@ class _CalculatorResultTabletBodyState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final Object? arguments = ModalRoute.of(context)!.settings.arguments;
 
     return BlocBuilder<CalculatorBloc, CalculatorState>(
@@ -388,8 +387,8 @@ class _CalculatorResultTabletBodyState
                     color: record.status == '지연'
                         ? Colors.red
                         : record.status == '선납'
-                            ? Colors.blue
-                            : Colors.green,
+                        ? Colors.blue
+                        : Colors.green,
                   ),
                 ),
               ),

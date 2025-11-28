@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:chungyak_box/presentation/viewmodels/auth_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/auth_state.dart';
 import 'package:chungyak_box/routes/app_routes.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
+
+  void _goToLogIn(BuildContext context) {
+    // Close the drawer first
+    Navigator.pop(context);
+    // Navigate to the calculator screen
+    Navigator.pushNamed(context, Routes.login);
+  }
+
+  void _goToMyPage(BuildContext context) {
+    // Close the drawer first
+    Navigator.pop(context);
+    // Navigate to the calculator screen
+    Navigator.pushNamed(context, Routes.myPage);
+  }
 
   void _goToCalculator(BuildContext context) {
     // Close the drawer first
@@ -53,6 +70,29 @@ class AppDrawer extends StatelessWidget {
               right: 16,
               top: MediaQuery.of(context).padding.top,
             ),
+          ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is Authenticated) {
+                return ListTile(
+                  leading: Icon(Icons.person, color: colors.onSurface),
+                  title: Text(
+                    '마이페이지',
+                    style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
+                  ),
+                  onTap: () => _goToMyPage(context),
+                );
+              } else {
+                return ListTile(
+                  leading: Icon(Icons.login, color: colors.onSurface),
+                  title: Text(
+                    '로그인',
+                    style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
+                  ),
+                  onTap: () => _goToLogIn(context),
+                );
+              }
+            },
           ),
           ListTile(
             leading: Icon(Icons.calculate, color: colors.onSurface),

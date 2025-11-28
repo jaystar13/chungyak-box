@@ -10,10 +10,6 @@ class CalculatorRequestModel {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'open_date': openDate,
-      'due_day': dueDay,
-      'end_date': endDate,
-    };
+    return {'open_date': openDate, 'due_day': dueDay, 'end_date': endDate};
   }
 }

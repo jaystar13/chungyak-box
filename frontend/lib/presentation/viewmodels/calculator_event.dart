@@ -42,9 +42,7 @@ class RecalculateSchedule extends CalculatorEvent {
 class CalculateRecognition extends CalculatorEvent {
   final RecognitionCalculatorRequestEntity requestEntity;
 
-  const CalculateRecognition({
-    required this.requestEntity,
-  });
+  const CalculateRecognition({required this.requestEntity});
 
   @override
   List<Object> get props => [requestEntity];

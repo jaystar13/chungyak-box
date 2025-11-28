@@ -25,7 +25,8 @@ extension CustomPaymentInputEntityMapper on CustomPaymentInputEntity {
   }
 }
 
-extension RecognitionCalculatorRequestMapper on RecognitionCalculatorRequestModel {
+extension RecognitionCalculatorRequestMapper
+    on RecognitionCalculatorRequestModel {
   RecognitionCalculatorRequestEntity toEntity() {
     return RecognitionCalculatorRequestEntity(
       paymentDay: paymentDay,
@@ -38,7 +39,8 @@ extension RecognitionCalculatorRequestMapper on RecognitionCalculatorRequestMode
   }
 }
 
-extension RecognitionCalculatorRequestEntityMapper on RecognitionCalculatorRequestEntity {
+extension RecognitionCalculatorRequestEntityMapper
+    on RecognitionCalculatorRequestEntity {
   RecognitionCalculatorRequestModel toModel() {
     return RecognitionCalculatorRequestModel(
       paymentDay: paymentDay,
@@ -70,7 +72,8 @@ extension RecognitionRoundRecordMapper on RecognitionRoundRecordModel {
   }
 }
 
-extension RecognitionCalculationResultMapper on RecognitionCalculationResultModel {
+extension RecognitionCalculationResultMapper
+    on RecognitionCalculationResultModel {
   RecognitionCalculationResultEntity toEntity() {
     return RecognitionCalculationResultEntity(
       paymentDay: paymentDay,

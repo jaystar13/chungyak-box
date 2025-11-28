@@ -6,11 +6,16 @@ import 'package:chungyak_box/routes/app_routes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:chungyak_box/core/app_theme.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/auth_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/auth_event.dart';
+import 'package:chungyak_box/presentation/viewmodels/login_bloc.dart';
 
 import 'package:chungyak_box/di/injection.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   configureDependencies();
   // 광고 초기화
   MobileAds.instance.initialize();
@@ -36,27 +41,35 @@ class App extends StatelessWidget {
       designSize: const Size(390, 844),
       minTextAdapt: true,
       builder: (context, child) {
-        return MaterialApp(
-          builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: const TextScaler.linear(1.0)),
-              child: child!,
-            );
-          },
-          initialRoute: Routes.home,
-          onGenerateRoute: Routes.generateRoute,
-          locale: const Locale('ko', 'KR'),
-          supportedLocales: const [Locale('en', 'US'), Locale('ko', 'KR')],
-          localizationsDelegates: const [
-            // AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthBloc>(
+              create: (context) => getIt<AuthBloc>()..add(const AppStarted()),
+            ),
+            BlocProvider<LoginBloc>(create: (context) => getIt<LoginBloc>()),
           ],
-          theme: AppTheme.lightTheme,
-          debugShowCheckedModeBanner: false,
+          child: MaterialApp(
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: const TextScaler.linear(1.0)),
+                child: child!,
+              );
+            },
+            initialRoute: Routes.home,
+            onGenerateRoute: Routes.generateRoute,
+            locale: const Locale('ko', 'KR'),
+            supportedLocales: const [Locale('en', 'US'), Locale('ko', 'KR')],
+            localizationsDelegates: const [
+              // AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            theme: AppTheme.lightTheme,
+            debugShowCheckedModeBanner: false,
+          ),
         );
       },
     );

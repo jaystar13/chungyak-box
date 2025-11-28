@@ -17,7 +17,9 @@ class RecognitionCalculationResultModel {
     required this.details,
   });
 
-  factory RecognitionCalculationResultModel.fromJson(Map<String, dynamic> json) {
+  factory RecognitionCalculationResultModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return RecognitionCalculationResultModel(
       paymentDay: json['payment_day'] as int,
       startDate: json['start_date'] as String,
@@ -26,7 +28,10 @@ class RecognitionCalculationResultModel {
       unrecognizedRounds: json['unrecognized_rounds'] as int,
       totalRecognizedAmount: json['total_recognized_amount'] as int,
       details: (json['details'] as List<dynamic>)
-          .map((e) => RecognitionRoundRecordModel.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) =>
+                RecognitionRoundRecordModel.fromJson(e as Map<String, dynamic>),
+          )
           .toList(),
     );
   }

@@ -64,7 +64,9 @@ class CalculatorRepositoryImpl implements CalculatorRepository {
   ) async {
     try {
       final requestModel = requestEntity.toModel();
-      final responseModel = await _apiServices.calculateRecognition(requestModel);
+      final responseModel = await _apiServices.calculateRecognition(
+        requestModel,
+      );
       return Success(responseModel.toEntity());
     } catch (e) {
       return Error('Failed to calculate recognition: $e');

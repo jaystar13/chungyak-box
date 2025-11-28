@@ -20,11 +20,11 @@ class RecognitionCalculatorRequestEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        paymentDay,
-        startDate,
-        endDate,
-        paymentAmountOption,
-        standardPaymentAmount,
-        payments,
-      ];
+    paymentDay,
+    startDate,
+    endDate,
+    paymentAmountOption,
+    standardPaymentAmount,
+    payments,
+  ];
 }

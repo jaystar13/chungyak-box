@@ -44,7 +44,8 @@ class HomeTabletBody extends StatelessWidget {
         padding: EdgeInsets.all(24.w),
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 400.w, // Each item can have a max width of 400
-          childAspectRatio: 9 / 4, // Adjust aspect ratio to prevent vertical overflow
+          childAspectRatio:
+              9 / 4, // Adjust aspect ratio to prevent vertical overflow
           crossAxisSpacing: 20.w,
           mainAxisSpacing: 20.w,
         ),
@@ -82,9 +83,7 @@ class _HomeGridItem extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       elevation: 1,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -146,7 +145,7 @@ class _HomeGridItem extends StatelessWidget {
                           Icons.arrow_forward_ios,
                           size: 12.sp,
                           color: colors.primary,
-                        )
+                        ),
                       ],
                     ),
                   ],

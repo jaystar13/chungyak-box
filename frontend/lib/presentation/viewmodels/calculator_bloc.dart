@@ -103,7 +103,9 @@ class CalculatorBloc extends Bloc<CalculatorEvent, CalculatorState> {
     final requestStartDate = event.requestEntity.startDate;
     final requestEndDate = event.requestEntity.endDate;
 
-    emit(CalculatorLoading(openDate: requestStartDate, endDate: requestEndDate));
+    emit(
+      CalculatorLoading(openDate: requestStartDate, endDate: requestEndDate),
+    );
     final result = await _calculateRecognitionUseCase(event.requestEntity);
 
     if (result is Success) {

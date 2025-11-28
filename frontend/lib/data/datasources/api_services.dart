@@ -11,8 +11,8 @@ import 'package:injectable/injectable.dart';
 
 @lazySingleton
 class ApiServices {
-  final String baseUrl = "https://chungyak-box.onrender.com";
-  // static final String baseUrl = "http://127.0.0.1:8000";
+  // final String baseUrl = "https://chungyak-box.onrender.com";
+  final String baseUrl = "http://127.0.0.1:8000";
 
   Future<PaymentScheduleModel> generatePaymentSchedule(
     CalculatorRequestModel request,
