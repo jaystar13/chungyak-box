@@ -92,3 +92,7 @@ class RecognitionCalculationResult(BaseModel):
     unrecognized_rounds: int
     total_recognized_amount: int
     details: List[RecognitionRoundRecord]
+
+
+class GoogleToken(BaseModel):
+    token: str

@@ -8,8 +8,11 @@ from app.models import Item, ItemCreate, User, UserCreate, UserUpdate
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
+    hashed_password = (
+        get_password_hash(user_create.password) if user_create.password else None
+    )
     db_obj = User.model_validate(
-        user_create, update={"hashed_password": get_password_hash(user_create.password)}
+        user_create, update={"hashed_password": hashed_password}
     )
     session.add(db_obj)
     session.commit()
@@ -33,6 +36,16 @@ def update_user(*, session: Session, db_user: User, user_in: UserUpdate) -> Any:
 
 def get_user_by_email(*, session: Session, email: str) -> User | None:
     statement = select(User).where(User.email == email)
+    session_user = session.exec(statement).first()
+    return session_user
+
+
+def get_user_by_social_id(
+    *, session: Session, social_id: str, social_provider: str
+) -> User | None:
+    statement = select(User).where(
+        User.social_id == social_id, User.social_provider == social_provider
+    )
     session_user = session.exec(statement).first()
     return session_user
 

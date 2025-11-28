@@ -14,13 +14,17 @@ class UserBase(SQLModel):
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
-    password: str = Field(min_length=8, max_length=40)
+    password: str | None = Field(default=None, min_length=8, max_length=40)
+    social_provider: str | None = Field(default=None, max_length=50)
+    social_id: str | None = Field(default=None, max_length=255)
 
 
 class UserRegister(SQLModel):
     email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=40)
+    password: str | None = Field(default=None, min_length=8, max_length=40)
     full_name: str | None = Field(default=None, max_length=255)
+    social_provider: str | None = Field(default=None, max_length=50)
+    social_id: str | None = Field(default=None, max_length=255)
 
 
 # Properties to receive via API on update, all are optional
@@ -42,7 +46,9 @@ class UpdatePassword(SQLModel):
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    hashed_password: str
+    hashed_password: str | None
+    social_provider: str | None = Field(default=None, max_length=50)
+    social_id: str | None = Field(default=None, unique=True, index=True, max_length=255)
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
@@ -101,6 +107,10 @@ class Message(SQLModel):
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class TokenWithUser(Token):
+    user: UserPublic
 
 
 # Contents of JWT token

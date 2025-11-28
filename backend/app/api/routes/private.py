@@ -3,18 +3,25 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.api.deps import SessionDep
+from app.api.deps import CurrentUser, SessionDep
 from app.core.security import get_password_hash
 from app.models import User, UserPublic
 
 router = APIRouter(tags=["private"], prefix="/private")
 
 
+@router.get("/me", response_model=UserPublic)
+def read_current_user(current_user: CurrentUser) -> Any:
+    """
+    Get current user.
+    """
+    return current_user
+
+
 class PrivateUserCreate(BaseModel):
     email: str
     password: str
     full_name: str
-    is_verified: bool = False
 
 
 @router.post("/users", response_model=UserPublic)

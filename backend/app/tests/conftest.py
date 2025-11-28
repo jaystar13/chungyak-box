@@ -2,7 +2,7 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, delete
+from sqlmodel import Session, SQLModel, delete
 
 from app.core.config import settings
 from app.core.db import engine, init_db
@@ -15,6 +15,7 @@ from app.tests.utils.utils import get_superuser_token_headers
 @pytest.fixture(scope="session", autouse=True)
 def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
+        SQLModel.metadata.drop_all(engine)
         init_db(session)
         yield session
         statement = delete(Item)
