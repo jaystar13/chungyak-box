@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="naver_client_id">RRsdQ2Zd8sI2E6X8MZTJ</string>
+    <string name="naver_client_secret">_iEJqJh0EU</string>
+    <string name="naver_client_name">청약계산소</string>
+</resources>

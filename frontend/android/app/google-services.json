@@ -12,7 +12,12 @@
           "package_name": "com.jaystar.chungyakbox"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "313180761205-f76mnmbrkl915nji32ti17csf4ec17kt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBTtdzFn4kYK2ybh9dKyjEjBbbcd63NwOU"
@@ -20,9 +25,23 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "313180761205-f76mnmbrkl915nji32ti17csf4ec17kt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "313180761205-m93khl987q1vvn74up0umak5f0ljalc7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.jaystar.chungyakbox",
+                "app_store_id": "6753172518"
+              }
+            }
+          ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-2770838096726003~9853691943"
     }
   ],
   "configuration_version": "1"

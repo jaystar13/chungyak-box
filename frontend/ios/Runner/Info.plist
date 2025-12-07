@@ -57,14 +57,36 @@
 		<string>313180761205-f76mnmbrkl915nji32ti17csf4ec17kt.apps.googleusercontent.com</string>
 		<key>CFBundleURLTypes</key>
 		<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-			<string>com.googleusercontent.apps.313180761205-m93khl987q1vvn74up0umak5f0ljalc7</string>
-			</array>
-		</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+				<string>com.googleusercontent.apps.313180761205-m93khl987q1vvn74up0umak5f0ljalc7</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+				<string>com.jaystar.chungyakbox</string>
+				</array>
+			</dict>			
 		</array>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>naversearchapp</string>
+			<string>naversearchthirdlogin</string>
+		</array>
+
+		<key>NidUrlScheme</key>
+		<string>com.jaystar.chungyakbox</string>
+		<key>NidClientID</key>
+		<string>RRsdQ2Zd8sI2E6X8MZTJ</string>
+		<key>NidClientSecret</key>
+		<string>_iEJqJh0EU</string>
+		<key>NidAppName</key>
+		<string>청약계산소</string>		
 	</dict>
 </plist>

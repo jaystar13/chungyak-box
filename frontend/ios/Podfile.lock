@@ -50,6 +50,9 @@ PODS:
   - Flutter (1.0.0)
   - flutter_native_splash (2.4.3):
     - Flutter
+  - flutter_naver_login (0.0.1):
+    - Flutter
+    - NidThirdPartyLogin (~> 5.0.0)
   - flutter_secure_storage (6.0.0):
     - Flutter
   - Google-Mobile-Ads-SDK (12.2.0):
@@ -135,6 +138,7 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - NidThirdPartyLogin (5.0.1)
   - objective_c (0.0.1):
     - Flutter
   - package_info_plus (0.4.5):
@@ -151,6 +155,7 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+  - flutter_naver_login (from `.symlinks/plugins/flutter_naver_login/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - google_mobile_ads (from `.symlinks/plugins/google_mobile_ads/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
@@ -177,6 +182,7 @@ SPEC REPOS:
     - GTMAppAuth
     - GTMSessionFetcher
     - nanopb
+    - NidThirdPartyLogin
     - PromisesObjC
 
 EXTERNAL SOURCES:
@@ -188,6 +194,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_native_splash:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
+  flutter_naver_login:
+    :path: ".symlinks/plugins/flutter_naver_login/ios"
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
   google_mobile_ads:
@@ -215,6 +223,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 3e884b01feabdf67582a80f3250425a00979b4ed
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
+  flutter_naver_login: 965ca284c1a64f0185dfaf9dfd1b8f69f34e6c11
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   Google-Mobile-Ads-SDK: 1dfb0c3cb46c7e2b00b0f4de74a1e06d9ea25d67
   google_mobile_ads: 535223588a6791b7a3cc3513a1bc7b89d12f3e62
@@ -227,6 +236,7 @@ SPEC CHECKSUMS:
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  NidThirdPartyLogin: ed291a543cc60a433bcad522b6bf7d3126ad4fdc
   objective_c: 89e720c30d716b036faf9c9684022048eee1eee2
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47

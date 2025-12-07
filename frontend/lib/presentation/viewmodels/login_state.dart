@@ -1,3 +1,4 @@
+import 'package:chungyak_box/domain/entities/latest_terms_entity.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class LoginState extends Equatable {
@@ -16,12 +17,18 @@ class LoginLoading extends LoginState {
 }
 
 class LoginSuccess extends LoginState {
-  final String token;
+  const LoginSuccess();
+}
 
-  const LoginSuccess({required this.token});
+class LoginRequiresTermsAgreement extends LoginState {
+  final String tempToken;
+  final LatestTermsEntity latestTerms;
+
+  const LoginRequiresTermsAgreement(
+      {required this.tempToken, required this.latestTerms});
 
   @override
-  List<Object?> get props => [token];
+  List<Object?> get props => [tempToken, latestTerms];
 }
 
 class LoginFailure extends LoginState {

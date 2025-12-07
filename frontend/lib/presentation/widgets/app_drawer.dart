@@ -11,25 +11,9 @@ import 'package:chungyak_box/routes/app_routes.dart';
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
-  void _goToLogIn(BuildContext context) {
-    // Close the drawer first
+  void _goTo(BuildContext context, String route) {
     Navigator.pop(context);
-    // Navigate to the calculator screen
-    Navigator.pushNamed(context, Routes.login);
-  }
-
-  void _goToMyPage(BuildContext context) {
-    // Close the drawer first
-    Navigator.pop(context);
-    // Navigate to the calculator screen
-    Navigator.pushNamed(context, Routes.myPage);
-  }
-
-  void _goToCalculator(BuildContext context) {
-    // Close the drawer first
-    Navigator.pop(context);
-    // Navigate to the calculator screen
-    Navigator.pushNamed(context, Routes.calculator);
+    Navigator.pushNamed(context, route);
   }
 
   Future<void> _sendEmail(BuildContext context) async {
@@ -80,7 +64,7 @@ class AppDrawer extends StatelessWidget {
                     '마이페이지',
                     style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
                   ),
-                  onTap: () => _goToMyPage(context),
+                  onTap: () => _goTo(context, Routes.myPage),
                 );
               } else {
                 return ListTile(
@@ -89,7 +73,7 @@ class AppDrawer extends StatelessWidget {
                     '로그인',
                     style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
                   ),
-                  onTap: () => _goToLogIn(context),
+                  onTap: () => _goTo(context, Routes.login),
                 );
               }
             },
@@ -100,7 +84,7 @@ class AppDrawer extends StatelessWidget {
               '청약 인정금액 계산기',
               style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
             ),
-            onTap: () => _goToCalculator(context),
+            onTap: () => _goTo(context, Routes.calculator),
           ),
           ListTile(
             leading: Icon(Icons.email, color: colors.onSurface),

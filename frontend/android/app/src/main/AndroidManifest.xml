@@ -24,16 +24,25 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="RRsdQ2Zd8sI2E6X8MZTJ" android:host="oauth"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data android:name="com.naver.sdk.clientId" android:value="@string/naver_client_id" />
+        <meta-data android:name="com.naver.sdk.clientSecret" android:value="@string/naver_client_secret" />
+        <meta-data android:name="com.naver.sdk.clientName" android:value="@string/naver_client_name" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2770838096726003~9853691943"/>
-    </application>
+    </application>   
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
