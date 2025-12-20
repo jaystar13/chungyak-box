@@ -1,8 +1,10 @@
+from typing import Optional
 import uuid
 from datetime import datetime
 from enum import Enum
 
 from pydantic import EmailStr
+from sqlalchemy import JSON, Column
 from sqlmodel import Field, Relationship, SQLModel
 
 class UserBase(SQLModel):
@@ -20,6 +22,9 @@ class User(UserBase, table=True):
         back_populates="user", cascade_delete=True
     )
     agreements: list["UserAgreement"] = Relationship(back_populates="user")
+    housing_subscription_detail: Optional["HousingSubscriptionDetail"]= Relationship(
+        back_populates="user", cascade_delete=True
+    )
 
 
 class SocialAccount(SQLModel, table=True):
@@ -65,3 +70,14 @@ class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     owner: User | None = Relationship(back_populates="items")
+
+
+class HousingSubscriptionDetail(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    calculation_result: dict = Field(default={}, sa_column=Column(JSON))
+    created_at: datetime = Field(default_factory=datetime.now, nullable=False)
+    updated_at: datetime = Field(
+        default_factory=datetime.now, sa_column_kwargs={"onupdate": datetime.now}
+    )
+    user_id: uuid.UUID = Field(foreign_key="user.id", unique=True, nullable=False)
+    user: "User" = Relationship(back_populates="housing_subscription_detail")

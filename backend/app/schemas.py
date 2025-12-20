@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Optional
 import uuid
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 from app.models import TermType
 
@@ -70,13 +70,14 @@ class PaymentStatus(str, Enum):
     normal = "정상"
     delay = "지연"
     prepaid = "선납"
+    missed = "미납"
 
 
 class RecognitionRoundRecord(BaseModel):
     installment_no: int
     due_date: date
-    paid_date: date
-    recognized_date: date
+    paid_date: Optional[date] = None
+    recognized_date: Optional[date] = None
     delay_days: int
     total_delay_days: int
     prepaid_days: int
@@ -134,8 +135,7 @@ class Terms(TermsBase):
     id: uuid.UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LatestTermsResponse(BaseModel):
@@ -158,8 +158,7 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     full_name: Optional[str] = Field(default=None, max_length=255)
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -198,6 +197,7 @@ class UpdatePassword(BaseModel):
 class UserPublic(UserBase):
     id: uuid.UUID
     social_accounts: List["SocialAccountPublic"] = []
+    housing_subscription_detail: Optional["HousingSubscriptionDetailPublic"] = None
 
 
 class UsersPublic(BaseModel):
@@ -207,8 +207,7 @@ class UsersPublic(BaseModel):
 class SocialAccountPublic(BaseModel):
     provider: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TermsPublic(BaseModel):
     id: uuid.UUID
@@ -221,13 +220,31 @@ class UserAgreementPublic(BaseModel):
     terms: TermsPublic
     agreed_at: datetime
 
+
+# Schemas for HousingSubscriptionDetail
+class HousingSubscriptionDetailBase(BaseModel):
+    calculation_result: RecognitionCalculationResult
+
+
+class HousingSubscriptionDetailCreate(HousingSubscriptionDetailBase):
+    pass
+
+
+class HousingSubscriptionDetailPublic(HousingSubscriptionDetailBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # Shared properties
 class ItemBase(BaseModel):
     title: str
     description: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Properties to receive on item creation
 class ItemCreate(ItemBase):

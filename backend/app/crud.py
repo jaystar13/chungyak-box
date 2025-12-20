@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
 from app.models import (
+    HousingSubscriptionDetail,
     Item,
     SocialAccount,
     Terms,
@@ -13,6 +14,7 @@ from app.models import (
     UserAgreement,
 )
 from app.schemas import (
+    HousingSubscriptionDetailCreate,
     ItemCreate,
     TermsCreate,
     UserAgreementCreate,
@@ -129,3 +131,42 @@ def get_agreements_by_user(*, session: Session, user_id: uuid.UUID) -> list[User
     statement = select(UserAgreement).where(UserAgreement.user_id == user_id)
     agreements = session.exec(statement).all()
     return agreements
+
+
+def get_housing_subscription_detail_by_user_id(
+    *, session: Session, user_id: uuid.UUID
+) -> HousingSubscriptionDetail | None:
+    statement = select(HousingSubscriptionDetail).where(
+        HousingSubscriptionDetail.user_id == user_id
+    )
+    return session.exec(statement).first()
+
+
+def create_housing_subscription_detail(
+    *,
+    session: Session,
+    detail_in: HousingSubscriptionDetailCreate,
+    user_id: uuid.UUID
+) -> HousingSubscriptionDetail:
+    # calculation_result is a Pydantic model, so we dump it to a dict
+    # Using mode="json" to ensure date objects are serialized to strings
+    db_obj = HousingSubscriptionDetail(
+        user_id=user_id,
+        calculation_result=detail_in.calculation_result.model_dump(mode="json"),
+    )
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+def remove_housing_subscription_detail_by_user_id(
+    *, session: Session, user_id: uuid.UUID
+) -> HousingSubscriptionDetail | None:
+    db_obj = get_housing_subscription_detail_by_user_id(
+        session=session, user_id=user_id
+    )
+    if db_obj:
+        session.delete(db_obj)
+        session.commit()
+    return db_obj

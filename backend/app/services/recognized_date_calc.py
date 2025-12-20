@@ -104,7 +104,6 @@ def calculate_recognition_details(
 ) -> RecognitionCalculationResult:
     all_rounds_data: List[Dict] = []
     installment_no_counter = 1
-
     current_month_start = request.start_date.replace(day=1)
     end_month_start = request.end_date.replace(day=1)
 
@@ -123,7 +122,9 @@ def calculate_recognition_details(
             break
 
         custom_payment_for_round = custom_payments_map.get(installment_no_counter)
-        paid_date = custom_payment_for_round.paid_date if custom_payment_for_round else due_date
+        paid_date_input = (
+            custom_payment_for_round.paid_date if custom_payment_for_round else due_date
+        )
 
         # Determine paid_amount for this round
         paid_amount = 0
@@ -132,10 +133,13 @@ def calculate_recognition_details(
         elif request.payment_amount_option == PaymentAmountOption.standard:
             paid_amount = request.standard_payment_amount or 0
         elif request.payment_amount_option == PaymentAmountOption.maximum:
-            if paid_date < RECOGNITION_AMOUNT_CHANGE_DATE:
+            if paid_date_input < RECOGNITION_AMOUNT_CHANGE_DATE:
                 paid_amount = 100000
             else:
                 paid_amount = 250000
+
+        has_payment = paid_amount > 0
+        paid_date = paid_date_input if has_payment else None
 
         all_rounds_data.append(
             {
@@ -158,7 +162,7 @@ def calculate_recognition_details(
     total_prepaid_days = 0
 
     for i, round_data in enumerate(all_rounds_data):
-        payment = round_data # Using round_data as payment for clarity
+        payment = round_data  # Using round_data as payment for clarity
 
         # 선납 인정은 최대 24회차(=24개월)까지만 허용 (original logic from recalc_payments)
         # This logic needs to be adapted to the new structure.
@@ -169,7 +173,14 @@ def calculate_recognition_details(
         # custom paid_dates, it would need further clarification.
         # For now, we'll calculate delay/prepaid based on provided paid_date vs due_date.
 
-        delay_days_current = (payment["paid_date"] - payment["due_date"]).days
+        has_payment = payment["paid_amount"] > 0
+        paid_date_for_calc = (
+            payment["paid_date"] if has_payment and payment["paid_date"] else payment["due_date"]
+        )
+
+        delay_days_current = (
+            (paid_date_for_calc - payment["due_date"]).days if has_payment else 0
+        )
         prepaid_days_current = 0
 
         if delay_days_current > 0:
@@ -187,12 +198,14 @@ def calculate_recognition_details(
         # is different from the original system's definition.
         # For now, I'll keep it as it was in recalc_payments.
         adjusment = (total_delay_days - total_prepaid_days)
-        if payment["installment_no"] > 0: # Avoid division by zero
+        if payment["installment_no"] > 0:  # Avoid division by zero
             adjusment //= payment["installment_no"]
         else:
-            adjusment = 0 # Or handle as an error if installment_no can be 0
+            adjusment = 0  # Or handle as an error if installment_no can be 0
 
-        recognized_date = payment["due_date"] + timedelta(days=adjusment)
+        recognized_date = (
+            payment["due_date"] + timedelta(days=adjusment) if has_payment else None
+        )
 
         round_data["recognized_date"] = recognized_date
         round_data["delay_days"] = delay_days_current if delay_days_current > 0 else 0
@@ -208,13 +221,17 @@ def calculate_recognition_details(
     detailed_records: List[RecognitionRoundRecord] = []
 
     for round_data in all_rounds_data:
-        is_recognized = round_data["recognized_date"] <= date.today()
+        recognized_date_value = round_data["recognized_date"]
+        is_recognized = (
+            recognized_date_value is not None and recognized_date_value <= date.today()
+        )
 
         recognized_amount_for_round = 0
         if is_recognized:
             # Recognized amount is the minimum of paid_amount and the max allowed for that date
             max_allowed_amount = 0
-            if round_data["paid_date"] < RECOGNITION_AMOUNT_CHANGE_DATE:
+            paid_date_for_amount = round_data["paid_date"] or round_data["due_date"]
+            if paid_date_for_amount < RECOGNITION_AMOUNT_CHANGE_DATE:
                 max_allowed_amount = 100000
             else:
                 max_allowed_amount = 250000
@@ -225,7 +242,9 @@ def calculate_recognition_details(
             final_unrecognized_rounds += 1
 
         status = PaymentStatus.normal
-        if round_data["delay_days"] > 0:
+        if round_data["paid_amount"] == 0:
+            status = PaymentStatus.missed
+        elif round_data["delay_days"] > 0:
             status = PaymentStatus.delay
         elif round_data["prepaid_days"] > 0:
             status = PaymentStatus.prepaid
