@@ -12,6 +12,7 @@ from app.models import (
     TermType,
     User,
     UserAgreement,
+    UserWithdrawal,
 )
 from app.schemas import (
     HousingSubscriptionDetailCreate,
@@ -170,3 +171,16 @@ def remove_housing_subscription_detail_by_user_id(
         session.delete(db_obj)
         session.commit()
     return db_obj
+
+
+def withdraw_user(*, session: Session, user: User) -> None:
+    # Record user withdrawal
+    user_withdrawal_record = UserWithdrawal(
+        user_id=user.id,
+        hashed_email=get_password_hash(user.email),
+    )
+    session.add(user_withdrawal_record)
+
+    # Delete the user (related data will be cascade deleted)
+    session.delete(user)
+    session.commit()

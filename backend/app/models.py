@@ -21,7 +21,7 @@ class User(UserBase, table=True):
     social_accounts: list["SocialAccount"] = Relationship(
         back_populates="user", cascade_delete=True
     )
-    agreements: list["UserAgreement"] = Relationship(back_populates="user")
+    agreements: list["UserAgreement"] = Relationship(back_populates="user", cascade_delete=True)
     housing_subscription_detail: Optional["HousingSubscriptionDetail"]= Relationship(
         back_populates="user", cascade_delete=True
     )
@@ -81,3 +81,10 @@ class HousingSubscriptionDetail(SQLModel, table=True):
     )
     user_id: uuid.UUID = Field(foreign_key="user.id", unique=True, nullable=False)
     user: "User" = Relationship(back_populates="housing_subscription_detail")
+
+
+class UserWithdrawal(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(index=True)
+    hashed_email: str = Field(index=True)
+    withdrawn_at: datetime = Field(default_factory=datetime.now, nullable=False)

@@ -3,8 +3,9 @@ from sqlmodel import Session
 
 from app import crud
 from app.core.config import settings
+from app.models import User
 from app.schemas import UserCreate
-from app.tests.utils.utils import random_lower_string
+from app.tests.utils.utils import random_email, random_lower_string
 
 
 def user_authentication_headers(
@@ -17,6 +18,13 @@ def user_authentication_headers(
     auth_token = response["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}
     return headers
+
+
+def create_random_user(db: Session, *, password: str | None = None) -> User:
+    email = random_email()
+    password = password or random_lower_string()
+    user_in = UserCreate(email=email, password=password)
+    return crud.create_user(session=db, user_create=user_in)
 
 
 def authentication_token_from_email(
