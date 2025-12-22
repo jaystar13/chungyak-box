@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import EmailStr
-from sqlalchemy import JSON, Column
+from sqlalchemy import JSON, Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
 class UserBase(SQLModel):
@@ -87,4 +87,6 @@ class UserWithdrawal(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(index=True)
     hashed_email: str = Field(index=True)
-    withdrawn_at: datetime = Field(default_factory=datetime.now, nullable=False)
+    withdrawn_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )

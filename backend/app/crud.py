@@ -1,5 +1,6 @@
 import uuid
 from typing import Any
+from datetime import datetime, timezone
 
 from sqlmodel import Session, select
 
@@ -178,6 +179,7 @@ def withdraw_user(*, session: Session, user: User) -> None:
     user_withdrawal_record = UserWithdrawal(
         user_id=user.id,
         hashed_email=get_password_hash(user.email),
+        withdrawn_at=datetime.now(timezone.utc),
     )
     session.add(user_withdrawal_record)
 
