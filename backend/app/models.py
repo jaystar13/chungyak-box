@@ -1,11 +1,19 @@
 from typing import Optional
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 
 from pydantic import EmailStr
 from sqlalchemy import JSON, Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
+
+
+KST = timezone(timedelta(hours=9))
+
+
+def kst_now():
+    return datetime.now(KST)
+
 
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
@@ -75,9 +83,13 @@ class Item(ItemBase, table=True):
 class HousingSubscriptionDetail(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     calculation_result: dict = Field(default={}, sa_column=Column(JSON))
-    created_at: datetime = Field(default_factory=datetime.now, nullable=False)
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), default=kst_now, nullable=False)
+    )
     updated_at: datetime = Field(
-        default_factory=datetime.now, sa_column_kwargs={"onupdate": datetime.now}
+        sa_column=Column(
+            DateTime(timezone=True), default=kst_now, onupdate=kst_now, nullable=False
+        )
     )
     user_id: uuid.UUID = Field(foreign_key="user.id", unique=True, nullable=False)
     user: "User" = Relationship(back_populates="housing_subscription_detail")
