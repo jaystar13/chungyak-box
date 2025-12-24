@@ -5,10 +5,7 @@ class LatestTermsEntity extends Equatable {
   final TermEntity? termsOfUse;
   final TermEntity? privacyPolicy;
 
-  const LatestTermsEntity({
-    this.termsOfUse,
-    this.privacyPolicy,
-  });
+  const LatestTermsEntity({this.termsOfUse, this.privacyPolicy});
 
   @override
   List<Object?> get props => [termsOfUse, privacyPolicy];

@@ -1,3 +1,17 @@
+// Helper function for safe integer parsing
+int _parseInt(dynamic value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is String) {
+    return int.tryParse(value) ?? 0;
+  }
+  if (value is double) {
+    return value.toInt();
+  }
+  return 0;
+}
+
 class RecognitionCalculationResultModel {
   final int paymentDay;
   final String startDate;
@@ -21,12 +35,12 @@ class RecognitionCalculationResultModel {
     Map<String, dynamic> json,
   ) {
     return RecognitionCalculationResultModel(
-      paymentDay: json['payment_day'] as int,
+      paymentDay: _parseInt(json['payment_day']),
       startDate: json['start_date'] as String,
       endDate: json['end_date'] as String,
-      recognizedRounds: json['recognized_rounds'] as int,
-      unrecognizedRounds: json['unrecognized_rounds'] as int,
-      totalRecognizedAmount: json['total_recognized_amount'] as int,
+      recognizedRounds: _parseInt(json['recognized_rounds']),
+      unrecognizedRounds: _parseInt(json['unrecognized_rounds']),
+      totalRecognizedAmount: _parseInt(json['total_recognized_amount']),
       details: (json['details'] as List<dynamic>)
           .map(
             (e) =>
@@ -52,8 +66,8 @@ class RecognitionCalculationResultModel {
 class RecognitionRoundRecordModel {
   final int installmentNo;
   final String dueDate;
-  final String paidDate;
-  final String recognizedDate;
+  final String? paidDate;
+  final String? recognizedDate;
   final int delayDays;
   final int totalDelayDays;
   final int prepaidDays;
@@ -66,8 +80,8 @@ class RecognitionRoundRecordModel {
   RecognitionRoundRecordModel({
     required this.installmentNo,
     required this.dueDate,
-    required this.paidDate,
-    required this.recognizedDate,
+    this.paidDate,
+    this.recognizedDate,
     required this.delayDays,
     required this.totalDelayDays,
     required this.prepaidDays,
@@ -80,18 +94,18 @@ class RecognitionRoundRecordModel {
 
   factory RecognitionRoundRecordModel.fromJson(Map<String, dynamic> json) {
     return RecognitionRoundRecordModel(
-      installmentNo: json['installment_no'] as int,
+      installmentNo: _parseInt(json['installment_no']),
       dueDate: json['due_date'] as String,
-      paidDate: json['paid_date'] as String,
-      recognizedDate: json['recognized_date'] as String,
-      delayDays: json['delay_days'] as int,
-      totalDelayDays: json['total_delay_days'] as int,
-      prepaidDays: json['prepaid_days'] as int,
-      totalPrepaidDays: json['total_prepaid_days'] as int,
+      paidDate: json['paid_date'] as String?,
+      recognizedDate: json['recognized_date'] as String?,
+      delayDays: _parseInt(json['delay_days']),
+      totalDelayDays: _parseInt(json['total_delay_days']),
+      prepaidDays: _parseInt(json['prepaid_days']),
+      totalPrepaidDays: _parseInt(json['total_prepaid_days']),
       status: json['status'] as String,
       isRecognized: json['is_recognized'] as bool,
-      paidAmount: json['paid_amount'] as int,
-      recognizedAmountForRound: json['recognized_amount_for_round'] as int,
+      paidAmount: _parseInt(json['paid_amount']),
+      recognizedAmountForRound: _parseInt(json['recognized_amount_for_round']),
     );
   }
 

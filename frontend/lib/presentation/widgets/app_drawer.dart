@@ -16,6 +16,16 @@ class AppDrawer extends StatelessWidget {
     Navigator.pushNamed(context, route);
   }
 
+  void _openLogin(BuildContext context) {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    Navigator.pop(context);
+    Navigator.pushNamed(
+      context,
+      Routes.login,
+      arguments: {'from': currentRoute},
+    );
+  }
+
   Future<void> _sendEmail(BuildContext context) async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
@@ -31,6 +41,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -38,7 +49,14 @@ class AppDrawer extends StatelessWidget {
     const tabletBreakpoint = 600;
 
     // Set drawer width based on screen size
-    final double drawerWidth = screenWidth >= tabletBreakpoint ? 400 : 300;
+    final double drawerWidth = screenWidth >= tabletBreakpoint ? 360 : 250;
+
+    final TextStyle tileTextStyle = screenWidth >= tabletBreakpoint
+        ? textTheme.titleLarge!
+        : textTheme.titleMedium!;
+    final double tileIconSize = 16.sp;
+    final double tileLeadingWidth = 24.w;
+    final double tileTitleGap = 10.w;
 
     return Drawer(
       width: drawerWidth,
@@ -59,39 +77,56 @@ class AppDrawer extends StatelessWidget {
             builder: (context, state) {
               if (state is Authenticated) {
                 return ListTile(
-                  leading: Icon(Icons.person, color: colors.onSurface),
-                  title: Text(
-                    '마이페이지',
-                    style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
+                  minLeadingWidth: tileLeadingWidth,
+                  horizontalTitleGap: tileTitleGap,
+                  leading: Icon(
+                    Icons.person,
+                    color: colors.onSurface,
+                    size: tileIconSize,
                   ),
+                  title: Text('마이페이지', style: tileTextStyle),
                   onTap: () => _goTo(context, Routes.myPage),
                 );
               } else {
                 return ListTile(
-                  leading: Icon(Icons.login, color: colors.onSurface),
-                  title: Text(
-                    '로그인',
-                    style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
+                  minLeadingWidth: tileLeadingWidth,
+                  horizontalTitleGap: tileTitleGap,
+                  leading: Icon(
+                    Icons.login,
+                    color: colors.onSurface,
+                    size: tileIconSize,
                   ),
-                  onTap: () => _goTo(context, Routes.login),
+                  title: Text('로그인', style: tileTextStyle),
+                  onTap: () => _openLogin(context),
                 );
               }
             },
           ),
           ListTile(
-            leading: Icon(Icons.calculate, color: colors.onSurface),
+            minLeadingWidth: tileLeadingWidth,
+            horizontalTitleGap: tileTitleGap,
+            leading: Icon(
+              Icons.calculate,
+              color: colors.onSurface,
+              size: tileIconSize,
+            ),
             title: Text(
               '청약 인정금액 계산기',
-              style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: tileTextStyle,
             ),
             onTap: () => _goTo(context, Routes.calculator),
           ),
           ListTile(
-            leading: Icon(Icons.email, color: colors.onSurface),
-            title: Text(
-              '문의하기',
-              style: TextStyle(color: colors.onSurface, fontSize: 16.sp),
+            minLeadingWidth: tileLeadingWidth,
+            horizontalTitleGap: tileTitleGap,
+            leading: Icon(
+              Icons.email,
+              color: colors.onSurface,
+              size: tileIconSize,
             ),
+            title: Text('문의하기', style: tileTextStyle),
             onTap: () => _sendEmail(context),
           ),
           const Divider(),
@@ -107,20 +142,20 @@ class AppDrawer extends StatelessWidget {
                       final info = snapshot.data!;
                       return Text(
                         '버전 ${info.version}',
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                        style: tileTextStyle.copyWith(color: Colors.grey),
                       );
                     } else {
                       return Text(
                         '버전 확인 중...',
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                        style: tileTextStyle.copyWith(color: Colors.grey),
                       );
                     }
                   },
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 8.h),
                 Text(
                   '© 2025 Chungyak Box',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                  style: tileTextStyle.copyWith(color: Colors.grey),
                 ),
               ],
             ),

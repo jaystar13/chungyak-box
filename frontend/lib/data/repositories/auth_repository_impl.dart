@@ -237,4 +237,15 @@ class AuthRepositoryImpl implements AuthRepository {
       return Error('네트워크 오류가 발생했습니다: $e');
     }
   }
+
+  @override
+  Future<Result<void>> deleteAccount() async {
+    try {
+      await _api.deleteAccount();
+      await _secureStorage.delete(key: 'jwt_token'); // Clear token on successful deletion
+      return const Success(null); // Return Success<void>
+    } catch (e) {
+      return Error('회원 탈퇴에 실패했습니다: $e');
+    }
+  }
 }

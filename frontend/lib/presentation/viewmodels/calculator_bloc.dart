@@ -1,28 +1,37 @@
+import 'package:chungyak_box/domain/usecases/save_housing_subscription_detail_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_event.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_state.dart';
-import 'package:chungyak_box/domain/usecases/generate_payment_schedule_use_case.dart';
-import 'package:chungyak_box/domain/usecases/recalculate_schedule_use_case.dart';
 import 'package:chungyak_box/domain/usecases/calculate_recognition_use_case.dart';
 import 'package:chungyak_box/core/result.dart';
 import 'package:injectable/injectable.dart';
 
 @injectable
 class CalculatorBloc extends Bloc<CalculatorEvent, CalculatorState> {
-  final GeneratePaymentScheduleUseCase _generatePaymentScheduleUseCase;
-  final RecalculateScheduleUseCase _recalculateScheduleUseCase;
   final CalculateRecognitionUseCase _calculateRecognitionUseCase;
+  final SaveHousingSubscriptionDetailUseCase
+  _saveHousingSubscriptionDetailUseCase;
 
   CalculatorBloc(
-    this._generatePaymentScheduleUseCase,
-    this._recalculateScheduleUseCase,
     this._calculateRecognitionUseCase,
+    this._saveHousingSubscriptionDetailUseCase,
   ) : super(CalculatorInitial()) {
     on<OpenDateChanged>(_onOpenDateChanged);
     on<EndDateChanged>(_onEndDateChanged);
-    on<GenerateSchedule>(_onGenerateSchedule);
-    on<RecalculateSchedule>(_onRecalculateSchedule);
+    on<GenerateInitialResult>(_onGenerateInitialResult);
     on<CalculateRecognition>(_onCalculateRecognition);
+    on<SaveCalculationResult>(_onSaveCalculationResult);
+    on<CalculationStateReset>(_onCalculationStateReset);
+  }
+
+  void _onCalculationStateReset(
+    CalculationStateReset event,
+    Emitter<CalculatorState> emit,
+  ) {
+    if (state is CalculatorAuthRequired) {
+      final currentState = state as CalculatorAuthRequired;
+      emit(RecognitionCalculated(currentState.result));
+    }
   }
 
   void _onOpenDateChanged(
@@ -36,61 +45,32 @@ class CalculatorBloc extends Bloc<CalculatorEvent, CalculatorState> {
     emit(CalculatorInitial(openDate: state.openDate, endDate: event.date));
   }
 
-  Future<void> _onGenerateSchedule(
-    GenerateSchedule event,
+  Future<void> _onGenerateInitialResult(
+    GenerateInitialResult event,
     Emitter<CalculatorState> emit,
   ) async {
-    emit(CalculatorLoading(openDate: event.openDate, endDate: event.endDate));
-    final result = await _generatePaymentScheduleUseCase(
-      event.openDate,
-      event.dueDay,
-      event.endDate,
+    final requestStartDate = event.requestEntity.startDate;
+    final requestEndDate = event.requestEntity.endDate;
+
+    emit(
+      CalculatorLoading(openDate: requestStartDate, endDate: requestEndDate),
     );
+    final result = await _calculateRecognitionUseCase(event.requestEntity);
 
     if (result is Success) {
       emit(
-        CalculatorLoaded(
+        InitialCalculationSuccess(
           (result as Success).data,
-          openDate: event.openDate,
-          endDate: event.endDate,
+          openDate: requestStartDate,
+          endDate: requestEndDate,
         ),
       );
     } else {
       emit(
         CalculatorError(
           (result as Error).message,
-          openDate: event.openDate,
-          endDate: event.endDate,
-        ),
-      );
-    }
-  }
-
-  Future<void> _onRecalculateSchedule(
-    RecalculateSchedule event,
-    Emitter<CalculatorState> emit,
-  ) async {
-    emit(CalculatorLoading(openDate: event.openDate, endDate: event.endDate));
-    final result = await _recalculateScheduleUseCase(
-      event.openDate,
-      event.endDate,
-      event.schedule,
-    );
-
-    if (result is Success) {
-      emit(
-        CalculatorLoaded(
-          (result as Success).data,
-          openDate: event.openDate,
-          endDate: event.endDate,
-        ),
-      );
-    } else {
-      emit(
-        CalculatorError(
-          (result as Error).message,
-          openDate: event.openDate,
-          endDate: event.endDate,
+          openDate: requestStartDate,
+          endDate: requestEndDate,
         ),
       );
     }
@@ -124,6 +104,22 @@ class CalculatorBloc extends Bloc<CalculatorEvent, CalculatorState> {
           endDate: requestEndDate,
         ),
       );
+    }
+  }
+
+  Future<void> _onSaveCalculationResult(
+    SaveCalculationResult event,
+    Emitter<CalculatorState> emit,
+  ) async {
+    emit(CalculatorSaving());
+    final result = await _saveHousingSubscriptionDetailUseCase(event.result);
+
+    if (result is Success) {
+      emit(CalculatorSaveSuccess());
+    } else if (result is Error && (result).message == "AUTH_REQUIRED") {
+      emit(CalculatorAuthRequired(event.result));
+    } else {
+      emit(CalculatorSaveError((result as Error).message));
     }
   }
 }

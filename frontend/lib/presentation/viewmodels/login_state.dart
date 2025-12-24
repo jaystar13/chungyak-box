@@ -24,8 +24,10 @@ class LoginRequiresTermsAgreement extends LoginState {
   final String tempToken;
   final LatestTermsEntity latestTerms;
 
-  const LoginRequiresTermsAgreement(
-      {required this.tempToken, required this.latestTerms});
+  const LoginRequiresTermsAgreement({
+    required this.tempToken,
+    required this.latestTerms,
+  });
 
   @override
   List<Object?> get props => [tempToken, latestTerms];

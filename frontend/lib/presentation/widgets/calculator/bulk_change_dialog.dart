@@ -12,8 +12,15 @@ import 'package:chungyak_box/presentation/widgets/date_picker_dialog.dart';
 
 class BulkChangeDialog extends StatefulWidget {
   final RecognitionCalculationResultEntity resultEntity;
+  final Future<RecognitionCalculationResultEntity> Function(
+    RecognitionCalculatorRequestEntity requestEntity,
+  )? onRecalculate;
 
-  const BulkChangeDialog({super.key, required this.resultEntity});
+  const BulkChangeDialog({
+    super.key,
+    required this.resultEntity,
+    this.onRecalculate,
+  });
 
   @override
   State<BulkChangeDialog> createState() => _BulkChangeDialogState();
@@ -40,7 +47,7 @@ class _BulkChangeDialogState extends State<BulkChangeDialog> {
     super.dispose();
   }
 
-  void _applyChanges() {
+  Future<void> _applyChanges() async {
     final newAmountText = _amountController.text.replaceAll(
       RegExp(r'[^0-9]'),
       '',
@@ -59,8 +66,6 @@ class _BulkChangeDialogState extends State<BulkChangeDialog> {
       return;
     }
 
-    final bloc = context.read<CalculatorBloc>();
-
     // Convert the full list of result records to input entities
     final updatedPayments = widget.resultEntity.details.map((record) {
       // If the record is within the selected range, apply changes
@@ -69,7 +74,7 @@ class _BulkChangeDialogState extends State<BulkChangeDialog> {
         return CustomPaymentInputEntity(
           installmentNo: record.installmentNo,
           // Use new date if provided, otherwise keep the old one
-          paidDate: _selectedDate ?? record.paidDate,
+          paidDate: _selectedDate ?? record.paidDate ?? record.dueDate,
           // Use new amount if provided, otherwise keep the old one
           paidAmount: newAmount ?? record.paidAmount,
         );
@@ -77,7 +82,7 @@ class _BulkChangeDialogState extends State<BulkChangeDialog> {
       // Otherwise, keep the original payment data
       return CustomPaymentInputEntity(
         installmentNo: record.installmentNo,
-        paidDate: record.paidDate,
+        paidDate: record.paidDate ?? record.dueDate,
         paidAmount: record.paidAmount,
       );
     }).toList();
@@ -92,11 +97,22 @@ class _BulkChangeDialogState extends State<BulkChangeDialog> {
       payments: updatedPayments,
     );
 
-    // Dispatch the event
-    bloc.add(CalculateRecognition(requestEntity: requestEntity));
-
-    // Close the dialog
-    Navigator.of(context).pop();
+    try {
+      if (widget.onRecalculate != null) {
+        await widget.onRecalculate!(requestEntity);
+      } else {
+        final bloc = context.read<CalculatorBloc>();
+        bloc.add(CalculateRecognition(requestEntity: requestEntity));
+      }
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('변경을 적용하는 중 오류가 발생했습니다.')),
+      );
+    }
   }
 
   @override
@@ -216,7 +232,7 @@ class _BulkChangeDialogState extends State<BulkChangeDialog> {
           child: const Text("취소"),
         ),
         ElevatedButton(
-          onPressed: _applyChanges,
+          onPressed: () => _applyChanges(),
           style: ElevatedButton.styleFrom(
             backgroundColor: colorScheme.primary,
             foregroundColor: colorScheme.onPrimary,

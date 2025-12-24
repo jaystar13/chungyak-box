@@ -1,9 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum TermType {
-  TERMS_OF_USE,
-  PRIVACY_POLICY,
-}
+enum TermType { TERMS_OF_USE, PRIVACY_POLICY }
 
 class TermEntity extends Equatable {
   final String id;

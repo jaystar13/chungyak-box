@@ -4,10 +4,7 @@ class LatestTermsModel {
   final TermModel? termsOfUse;
   final TermModel? privacyPolicy;
 
-  LatestTermsModel({
-    this.termsOfUse,
-    this.privacyPolicy,
-  });
+  LatestTermsModel({this.termsOfUse, this.privacyPolicy});
 
   factory LatestTermsModel.fromJson(Map<String, dynamic> json) {
     return LatestTermsModel(

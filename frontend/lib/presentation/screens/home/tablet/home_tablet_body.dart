@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../data/datasources/admob_services.dart';
-import '../../../../routes/app_routes.dart';
-import '../../../utils/design_system.dart';
-import '../../../widgets/app_drawer.dart';
+import 'package:chungyak_box/presentation/utils/design_system.dart';
+import 'package:chungyak_box/routes/app_routes.dart';
 
 class HomeTabletBody extends StatelessWidget {
   const HomeTabletBody({super.key});
@@ -22,45 +20,24 @@ class HomeTabletBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: Icon(Icons.menu, color: colors.onPrimaryContainer),
-            );
-          },
-        ),
-        elevation: 2,
-        backgroundColor: colors.primaryContainer,
+    return GridView.builder(
+      padding: EdgeInsets.all(24.w),
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 420.w,
+        childAspectRatio: 4 / 2,
+        crossAxisSpacing: 20.w,
+        mainAxisSpacing: 20.w,
       ),
-      drawer: const AppDrawer(),
-      body: GridView.builder(
-        padding: EdgeInsets.all(24.w),
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 400.w, // Each item can have a max width of 400
-          childAspectRatio:
-              9 / 4, // Adjust aspect ratio to prevent vertical overflow
-          crossAxisSpacing: 20.w,
-          mainAxisSpacing: 20.w,
-        ),
-        itemCount: _features.length,
-        itemBuilder: (context, index) {
-          final feature = _features[index];
-          return _HomeGridItem(
-            title: feature['title']!,
-            description: feature['description']!,
-            imagePath: feature['image']!,
-            routeName: feature['route']!,
-          );
-        },
-      ),
-      bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
+      itemCount: _features.length,
+      itemBuilder: (context, index) {
+        final feature = _features[index];
+        return _HomeGridItem(
+          title: feature['title']!,
+          description: feature['description']!,
+          imagePath: feature['image']!,
+          routeName: feature['route']!,
+        );
+      },
     );
   }
 }
@@ -104,49 +81,50 @@ class _HomeGridItem extends StatelessWidget {
                 padding: EdgeInsets.all(12.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 6.h),
-                        Text(
-                          description,
-                          style: AppTextStyles.caption.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "바로가기",
-                            textAlign: TextAlign.end,
-                            style: AppTextStyles.small.copyWith(
-                              color: colors.primary,
-                            ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            title,
+                            style: AppTextStyles.subtitle,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          SizedBox(height: 6.h),
+                          Flexible(
+                            child: Text(
+                              description,
+                              style: AppTextStyles.caption.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                              softWrap: true,
+                              maxLines: null,
+                              overflow: TextOverflow.visible,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: ElevatedButton(
+                          style: AppButtonStyles.elevatedButtonStyle(colors),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, Routes.calculator),
+                          child: Text(
+                            "계산기로 이동",
+                            style: AppTextStyles.small.copyWith(
+                              color: colors.onPrimary,
+                            ),
+                          ),
                         ),
-                        SizedBox(width: 4.w),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 12.sp,
-                          color: colors.primary,
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),

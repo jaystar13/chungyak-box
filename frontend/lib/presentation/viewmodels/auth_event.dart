@@ -25,3 +25,7 @@ class LoggedIn extends AuthEvent {
 class LoggedOut extends AuthEvent {
   const LoggedOut();
 }
+
+class DeleteAccount extends AuthEvent {
+  const DeleteAccount();
+}

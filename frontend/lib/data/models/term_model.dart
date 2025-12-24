@@ -18,8 +18,9 @@ class TermModel {
   factory TermModel.fromJson(Map<String, dynamic> json) {
     return TermModel(
       id: json['id'] as String,
-      termType: TermType.values
-          .firstWhere((e) => e.name == (json['term_type'] as String).toUpperCase()),
+      termType: TermType.values.firstWhere(
+        (e) => e.name == (json['term_type'] as String).toUpperCase(),
+      ),
       version: json['version'] as String,
       content: json['content'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),

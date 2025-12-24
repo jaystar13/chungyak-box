@@ -24,11 +24,11 @@
 *   **목적:** 애플리케이션의 핵심 비즈니스 로직을 담고 있으며, 어떤 프레임워크나 외부 요소에도 의존하지 않는 가장 순수한 계층입니다.
 *   **구성 요소:**
     *   `entities/`:
-        *   `PaymentEntity`, `PaymentScheduleEntity`: 비즈니스 로직에서 사용되는 핵심 데이터 객체입니다. `equatable`을 사용하여 값 비교를 용이하게 합니다.
+        *   `RecognitionCalculationResultEntity`, `RecognitionRoundRecordEntity`, `CustomPaymentInputEntity`, `MySubscriptionEntity`: 비즈니스 로직에서 사용되는 핵심 데이터 객체입니다. `equatable`을 사용하여 값 비교를 용이하게 합니다.
     *   `repositories/`:
         *   `CalculatorRepository`: 데이터 계층이 구현해야 할 계약(인터페이스)을 정의합니다. "어떤 데이터를 어떻게 가져올 것인가"에 대한 추상적인 정의만 포함합니다.
     *   `usecases/`:
-        *   `GeneratePaymentScheduleUseCase`, `RecalculateScheduleUseCase`: 특정 비즈니스 규칙을 캡슐화하고, Repository 인터페이스를 통해 데이터 작업을 조율합니다. 이들은 비즈니스 로직의 진입점입니다.
+        *   `CalculateRecognitionUseCase`, `SaveHousingSubscriptionDetailUseCase`, `GetMySubscriptionUseCase`: 특정 비즈니스 규칙을 캡슐화하고, Repository 인터페이스를 통해 데이터 작업을 조율합니다. 이들은 비즈니스 로직의 진입점입니다.
 *   **의존성:** Data Layer나 Presentation Layer에 전혀 의존하지 않습니다. 오직 Domain Layer 내의 다른 구성 요소에만 의존합니다.
 
 ---
@@ -40,9 +40,9 @@
     *   `datasources/`:
         *   `ApiServices`: 외부 API와의 직접적인 통신을 처리합니다. HTTP 요청을 보내고 응답을 받습니다.
     *   `models/`:
-        *   `PaymentModel`, `PaymentScheduleModel`, `CalculatorRequestModel`, `PaymentScheduleRequestModel`: API의 데이터 구조를 반영하는 데이터 전송 객체(DTO)입니다. `fromJson`/`toJson` 메서드를 통해 JSON 직렬화/역직렬화를 처리합니다.
+        *   `RecognitionCalculatorRequestModel`, `RecognitionCalculationResultModel`, `MySubscriptionModel`: API의 데이터 구조를 반영하는 데이터 전송 객체(DTO)입니다. `fromJson`/`toJson` 메서드를 통해 JSON 직렬화/역직렬화를 처리합니다.
     *   `mapper/`:
-        *   `payment_mapper.dart`: Data Layer의 `Model` 객체를 Domain Layer의 `Entity` 객체로, 또는 그 반대로 변환하는 확장 메서드를 제공합니다.
+        *   `recognition_mapper.dart`, `my_subscription_mapper.dart`: Data Layer의 `Model` 객체를 Domain Layer의 `Entity` 객체로, 또는 그 반대로 변환하는 확장 메서드를 제공합니다.
     *   `repositories/`:
         *   `CalculatorRepositoryImpl`: `CalculatorRepository` 인터페이스의 구체적인 구현체입니다. `ApiServices`를 통해 데이터를 가져오고, 매퍼를 사용하여 `Model`을 `Entity`로 변환하여 Domain Layer에 전달합니다.
 *   **의존성:** Domain Layer(인터페이스 및 엔티티)와 외부 패키지(`http`)에 의존합니다.
@@ -90,19 +90,16 @@
 
 ---
 
-### **제어 흐름 예시: 납입 일정 생성**
+### **제어 흐름 예시: 인정금 재계산**
 
-1.  **UI (Presentation Layer):** 사용자가 `CalculatorScreen`에서 날짜를 입력하고 '생성' 버튼을 누릅니다.
-2.  **Event (Presentation Layer):** `CalculatorScreen`은 `GenerateSchedule` 이벤트를 생성하여 `CalculatorBloc`에 전달합니다.
-3.  **Bloc (Presentation Layer):** `CalculatorBloc`은 `GenerateSchedule` 이벤트를 받으면, 먼저 `CalculatorLoading` 상태를 UI에 전달합니다.
-4.  **UseCase (Domain Layer):** `CalculatorBloc`은 `GeneratePaymentScheduleUseCase`를 호출하여 비즈니스 로직을 시작합니다.
-5.  **Repository Interface (Domain Layer):** `GeneratePaymentScheduleUseCase`는 `CalculatorRepository` 인터페이스의 `generatePaymentSchedule` 메서드를 호출합니다.
-6.  **Repository Implementation (Data Layer):** `CalculatorRepositoryImpl`이 `generatePaymentSchedule` 호출을 받습니다.
-7.  **Model (Data Layer):** `CalculatorRepositoryImpl`은 `CalculatorRequestModel`을 생성하고, `ApiServices`를 호출합니다.
-8.  **DataSource (Data Layer):** `ApiServices`는 HTTP 요청을 보내고, 응답으로 `PaymentScheduleModel`을 받습니다.
-9.  **Mapper (Data Layer):** `CalculatorRepositoryImpl`은 `payment_mapper.dart`를 사용하여 `PaymentScheduleModel`을 `PaymentScheduleEntity`로 변환합니다.
-10. **Result (Core Layer):** `CalculatorRepositoryImpl`은 `Result.success(PaymentScheduleEntity)`를 UseCase에 반환합니다.
-11. **Bloc (Presentation Layer):** `CalculatorBloc`은 UseCase로부터 결과를 받아 `CalculatorLoaded` 상태와 함께 `PaymentScheduleEntity`를 UI에 전달합니다.
-12. **UI (Presentation Layer):** `CalculatorScreen`은 `BlocBuilder`를 통해 `CalculatorLoaded` 상태를 감지하고, 화면을 다시 그려 납입 일정을 표시합니다.
+1.  **UI (Presentation Layer):** 사용자가 `CalculatorScreen` 또는 세부 다이얼로그에서 납입 정보를 수정한 뒤 재계산을 요청합니다.
+2.  **Event (Presentation Layer):** 수정된 입력값은 `CalculateRecognition` 이벤트로 감싸져 `CalculatorBloc`에 전달됩니다.
+3.  **Bloc (Presentation Layer):** `CalculatorBloc`은 이벤트를 받으면 `CalculatorLoading` 상태를 내보낸 뒤 `CalculateRecognitionUseCase`를 호출합니다.
+4.  **UseCase (Domain Layer):** `CalculateRecognitionUseCase`는 `CalculatorRepository`의 `calculateRecognition` 메서드를 실행합니다.
+5.  **Repository Interface/Implementation:** `CalculatorRepositoryImpl`은 `recognition_mapper.dart`를 통해 요청 엔티티를 `RecognitionCalculatorRequestModel`로 변환한 뒤 `ApiServices`를 호출합니다.
+6.  **DataSource (Data Layer):** `ApiServices`가 외부 API(`/payments/calculate-recognition`)에 HTTP POST 요청을 보내고, 응답으로 `RecognitionCalculationResultModel`을 받습니다.
+7.  **Mapper (Data Layer):** 응답 모델은 다시 엔티티(`RecognitionCalculationResultEntity`)로 변환됩니다.
+8.  **Result (Core Layer):** 변환된 엔티티는 `Result.success(...)` 형태로 UseCase와 Bloc에 전달됩니다.
+9.  **UI (Presentation Layer):** Bloc은 성공 시 `RecognitionCalculated` 또는 `InitialCalculationSuccess` 상태를 내보내고, UI는 해당 상태를 구독하여 최신 인정금 계산 결과를 화면에 표시합니다.
 
 ---

@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:chungyak_box/domain/entities/payment_schedule_entity.dart';
 import 'package:chungyak_box/domain/entities/recognition_calculation_result_entity.dart';
 
 abstract class CalculatorState extends Equatable {
@@ -20,19 +19,36 @@ class CalculatorLoading extends CalculatorState {
   const CalculatorLoading({super.openDate, super.endDate});
 }
 
-class CalculatorLoaded extends CalculatorState {
-  final PaymentScheduleEntity schedule;
+class CalculatorSaving extends CalculatorState {
+  const CalculatorSaving({super.openDate, super.endDate});
+}
 
-  const CalculatorLoaded(this.schedule, {super.openDate, super.endDate});
+class CalculatorSaveSuccess extends CalculatorState {
+  const CalculatorSaveSuccess({super.openDate, super.endDate});
+}
+
+class CalculatorSaveError extends CalculatorState {
+  final String message;
+
+  const CalculatorSaveError(this.message, {super.openDate, super.endDate});
 
   @override
-  List<Object?> get props => [schedule, openDate, endDate];
+  List<Object?> get props => [message, openDate, endDate];
 }
 
 class RecognitionCalculated extends CalculatorState {
   final RecognitionCalculationResultEntity result;
 
   const RecognitionCalculated(this.result, {super.openDate, super.endDate});
+
+  @override
+  List<Object?> get props => [result, openDate, endDate];
+}
+
+class InitialCalculationSuccess extends CalculatorState {
+  final RecognitionCalculationResultEntity result;
+
+  const InitialCalculationSuccess(this.result, {super.openDate, super.endDate});
 
   @override
   List<Object?> get props => [result, openDate, endDate];
@@ -45,4 +61,12 @@ class CalculatorError extends CalculatorState {
 
   @override
   List<Object?> get props => [message, openDate, endDate];
+}
+
+class CalculatorAuthRequired extends CalculatorState {
+  final RecognitionCalculationResultEntity result;
+  const CalculatorAuthRequired(this.result, {super.openDate, super.endDate});
+
+  @override
+  List<Object?> get props => [result, openDate, endDate];
 }

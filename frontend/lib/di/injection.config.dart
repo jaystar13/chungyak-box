@@ -30,18 +30,20 @@ import 'package:chungyak_box/domain/usecases/calculate_recognition_use_case.dart
     as _i61;
 import 'package:chungyak_box/domain/usecases/complete_social_signup_use_case.dart'
     as _i390;
+import 'package:chungyak_box/domain/usecases/delete_account_use_case.dart'
+    as _i921;
 import 'package:chungyak_box/domain/usecases/email_password_login_use_case.dart'
     as _i29;
-import 'package:chungyak_box/domain/usecases/generate_payment_schedule_use_case.dart'
-    as _i344;
 import 'package:chungyak_box/domain/usecases/get_latest_terms_use_case.dart'
     as _i456;
+import 'package:chungyak_box/domain/usecases/get_my_subscription_use_case.dart'
+    as _i382;
 import 'package:chungyak_box/domain/usecases/google_login_use_case.dart'
     as _i257;
 import 'package:chungyak_box/domain/usecases/naver_login_use_case.dart'
     as _i768;
-import 'package:chungyak_box/domain/usecases/recalculate_schedule_use_case.dart'
-    as _i204;
+import 'package:chungyak_box/domain/usecases/save_housing_subscription_detail_use_case.dart'
+    as _i1042;
 import 'package:chungyak_box/domain/usecases/signup_use_case.dart' as _i765;
 import 'package:chungyak_box/domain/usecases/verify_token_use_case.dart'
     as _i252;
@@ -49,6 +51,8 @@ import 'package:chungyak_box/presentation/viewmodels/auth_bloc.dart' as _i331;
 import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart'
     as _i365;
 import 'package:chungyak_box/presentation/viewmodels/login_bloc.dart' as _i662;
+import 'package:chungyak_box/presentation/viewmodels/my_subscription_bloc.dart'
+    as _i954;
 import 'package:chungyak_box/presentation/viewmodels/signup/signup_bloc.dart'
     as _i988;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
@@ -65,9 +69,11 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     gh.factory<_i988.TermMapper>(() => _i988.TermMapper());
     gh.factory<_i409.UserMapper>(() => _i409.UserMapper());
-    gh.lazySingleton<_i879.ApiServices>(() => _i879.ApiServices());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
+    );
+    gh.lazySingleton<_i879.ApiServices>(
+      () => _i879.ApiServices(gh<_i558.FlutterSecureStorage>()),
     );
     gh.factory<_i839.LoginResponseMapper>(
       () => _i839.LoginResponseMapper(gh<_i409.UserMapper>()),
@@ -89,13 +95,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i61.CalculateRecognitionUseCase>(
       () => _i61.CalculateRecognitionUseCase(gh<_i823.CalculatorRepository>()),
     );
-    gh.factory<_i344.GeneratePaymentScheduleUseCase>(
-      () => _i344.GeneratePaymentScheduleUseCase(
+    gh.factory<_i382.GetMySubscriptionUseCase>(
+      () => _i382.GetMySubscriptionUseCase(gh<_i823.CalculatorRepository>()),
+    );
+    gh.factory<_i1042.SaveHousingSubscriptionDetailUseCase>(
+      () => _i1042.SaveHousingSubscriptionDetailUseCase(
         gh<_i823.CalculatorRepository>(),
       ),
-    );
-    gh.factory<_i204.RecalculateScheduleUseCase>(
-      () => _i204.RecalculateScheduleUseCase(gh<_i823.CalculatorRepository>()),
     );
     gh.lazySingleton<_i674.TermsRepository>(
       () => _i280.TermsRepositoryImpl(
@@ -105,6 +111,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i390.CompleteSocialSignupUseCase>(
       () => _i390.CompleteSocialSignupUseCase(gh<_i133.AuthRepository>()),
+    );
+    gh.factory<_i921.DeleteAccountUseCase>(
+      () => _i921.DeleteAccountUseCase(gh<_i133.AuthRepository>()),
     );
     gh.factory<_i29.EmailPasswordLoginUseCase>(
       () => _i29.EmailPasswordLoginUseCase(gh<_i133.AuthRepository>()),
@@ -121,24 +130,27 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i252.VerifyTokenUseCase>(
       () => _i252.VerifyTokenUseCase(gh<_i133.AuthRepository>()),
     );
-    gh.factory<_i456.GetLatestTermsUseCase>(
-      () => _i456.GetLatestTermsUseCase(gh<_i674.TermsRepository>()),
-    );
-    gh.factory<_i988.SignupBloc>(
-      () => _i988.SignupBloc(gh<_i765.SignupUseCase>()),
+    gh.factory<_i954.MySubscriptionBloc>(
+      () => _i954.MySubscriptionBloc(gh<_i382.GetMySubscriptionUseCase>()),
     );
     gh.factory<_i365.CalculatorBloc>(
       () => _i365.CalculatorBloc(
-        gh<_i344.GeneratePaymentScheduleUseCase>(),
-        gh<_i204.RecalculateScheduleUseCase>(),
         gh<_i61.CalculateRecognitionUseCase>(),
+        gh<_i1042.SaveHousingSubscriptionDetailUseCase>(),
       ),
     );
     gh.lazySingleton<_i331.AuthBloc>(
       () => _i331.AuthBloc(
         gh<_i558.FlutterSecureStorage>(),
         gh<_i252.VerifyTokenUseCase>(),
+        gh<_i921.DeleteAccountUseCase>(),
       ),
+    );
+    gh.factory<_i456.GetLatestTermsUseCase>(
+      () => _i456.GetLatestTermsUseCase(gh<_i674.TermsRepository>()),
+    );
+    gh.factory<_i988.SignupBloc>(
+      () => _i988.SignupBloc(gh<_i765.SignupUseCase>()),
     );
     gh.factory<_i662.LoginBloc>(
       () => _i662.LoginBloc(

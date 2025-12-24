@@ -1,29 +1,18 @@
-import 'package:chungyak_box/data/datasources/admob_services.dart';
+import 'dart:async';
 import 'package:chungyak_box/domain/entities/recognition_calculation_result_entity.dart';
+import 'package:chungyak_box/domain/entities/recognition_calculator_request_entity.dart';
 import 'package:chungyak_box/domain/entities/recognition_round_record_entity.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/calculator_event.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_state.dart';
-import 'package:chungyak_box/presentation/widgets/payment_detail_bottom_sheet.dart';
+import 'package:chungyak_box/presentation/widgets/calculator/detailed_history_list.dart';
+import 'package:chungyak_box/presentation/widgets/calculator/result_actions_helper.dart';
 import 'package:chungyak_box/presentation/widgets/calculator/bulk_change_dialog.dart';
+import 'package:chungyak_box/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-
-// Helper class to hold transformed data for yearly summary display
-class YearlySummary {
-  final String year;
-  final List<MonthlyDetail> monthlyDetails;
-
-  YearlySummary({required this.year, required this.monthlyDetails});
-}
-
-// Helper class to hold transformed data for monthly detail display
-class MonthlyDetail {
-  final RecognitionRoundRecordEntity recordEntity;
-
-  MonthlyDetail({required this.recordEntity});
-}
 
 class CalculatorResultMobileBody extends StatefulWidget {
   const CalculatorResultMobileBody({super.key});
@@ -37,27 +26,181 @@ class _CalculatorResultMobileBodyState
     extends State<CalculatorResultMobileBody> {
   bool _showNotification = true;
   bool _isSortAscending = false;
+  late final CalculatorBloc _calculatorBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculatorBloc = context.read<CalculatorBloc>();
+  }
+
+  Future<bool> _showAuthDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('로그인 필요'),
+          content: const Text('계산 결과를 저장하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('확인'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true); // Indicate confirmation
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      // User confirmed, navigate to login and await result
+      final loginResult = await Navigator.of(
+        context,
+      ).pushNamed(Routes.login, arguments: {'from': Routes.calculatorResult});
+      return loginResult == true;
+    }
+
+    return false;
+  }
+
+  Future<bool> _showSaveConfirmationDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('확인'),
+          content: const Text('나의 청약으로 저장하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
+  Future<bool> _showSaveSuccessDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('저장 완료'),
+          content:
+              const Text('저장이 완료되었습니다. 나의 청약내역에서 확인하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('아니오'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final Object? arguments = ModalRoute.of(context)!.settings.arguments;
+    return BlocListener<CalculatorBloc, CalculatorState>(
+      listener: (context, state) async {
+        if (state is CalculatorLoading) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('재계산 중...')));
+        } else if (state is RecognitionCalculated) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        } else if (state is CalculatorError) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('오류: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+        } else if (state is CalculatorSaving) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('계산 결과를 저장 중...')));
+        } else if (state is CalculatorSaveSuccess) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          final shouldMove = await _showSaveSuccessDialog(context);
+          if (!context.mounted) {
+            return;
+          }
+          if (shouldMove) {
+            Navigator.of(context).pushNamed(Routes.mySubscriptions);
+          }
+        } else if (state is CalculatorSaveError) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('계산 결과 저장 실패: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+        } else if (state is CalculatorAuthRequired) {
+          final loginSuccess = await _showAuthDialog(context);
 
-    return BlocBuilder<CalculatorBloc, CalculatorState>(
-      builder: (context, state) {
-        // Determine the result entity: use the one from the state if available,
-        // otherwise fall back to the initial arguments.
-        final RecognitionCalculationResultEntity resultEntity;
-        if (state is RecognitionCalculated) {
-          resultEntity = state.result;
-        } else if (arguments is RecognitionCalculationResultEntity) {
-          resultEntity = arguments;
-        } else {
-          // Handle case where arguments are not passed or state is not what we expect
-          return Scaffold(
-            appBar: AppBar(title: const Text('계산 결과')),
-            body: const Center(
+          if (loginSuccess) {
+            // Add a short delay to allow auth state to propagate
+            await Future.delayed(const Duration(milliseconds: 500));
+            // If login was successful, retry saving the result.
+            _calculatorBloc.add(SaveCalculationResult(state.result));
+          } else {
+            // If login was cancelled, just reset the state to stop showing the dialog.
+            _calculatorBloc.add(const CalculationStateReset());
+          }
+        }
+      },
+      child: BlocBuilder<CalculatorBloc, CalculatorState>(
+        buildWhen: (previous, current) {
+          // Only rebuild the UI for states that affect the displayed data.
+          // Ignore saving-related states to prevent the UI from resetting.
+          return current is RecognitionCalculated ||
+              current is InitialCalculationSuccess ||
+              current is CalculatorLoading ||
+              current is CalculatorError;
+        },
+        builder: (context, state) {
+          final colorScheme = Theme.of(context).colorScheme;
+          final textTheme = Theme.of(context).textTheme;
+          final Object? arguments = ModalRoute.of(context)!.settings.arguments;
+
+          final RecognitionCalculationResultEntity? nullableResultEntity;
+          if (state is RecognitionCalculated) {
+            nullableResultEntity = state.result;
+          } else if (state is InitialCalculationSuccess) {
+            nullableResultEntity = state.result;
+          } else if (arguments is RecognitionCalculationResultEntity) {
+            nullableResultEntity = arguments;
+          } else {
+            nullableResultEntity = null;
+          }
+
+          if (nullableResultEntity == null) {
+            return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text(
@@ -65,237 +208,218 @@ class _CalculatorResultMobileBodyState
                   textAlign: TextAlign.center,
                 ),
               ),
-            ),
-          );
-        }
-
-        // Create a mutable, sorted list of details
-        final sortedDetails = List<RecognitionRoundRecordEntity>.from(
-          resultEntity.details,
-        );
-        sortedDetails.sort((a, b) {
-          if (_isSortAscending) {
-            return a.installmentNo.compareTo(b.installmentNo);
-          } else {
-            return b.installmentNo.compareTo(a.installmentNo);
+            );
           }
-        });
 
-        // Transform sortedDetails into List<YearlySummary>
-        final Map<int, List<MonthlyDetail>> groupedByYear = {};
-        for (var record in sortedDetails) {
-          final year = record.dueDate.year;
-          groupedByYear
-              .putIfAbsent(year, () => [])
-              .add(MonthlyDetail(recordEntity: record));
-        }
+          final RecognitionCalculationResultEntity resultEntity =
+              nullableResultEntity;
 
-        final yearlySummaries = groupedByYear.entries.map((entry) {
-          return YearlySummary(
-            year: entry.key.toString(),
-            monthlyDetails: entry.value,
+          final sortedDetails = List<RecognitionRoundRecordEntity>.from(
+            resultEntity.details,
           );
-        }).toList();
-
-        // Sort yearly summaries by year
-        yearlySummaries.sort((a, b) {
-          if (_isSortAscending) {
-            return int.parse(a.year).compareTo(int.parse(b.year));
-          } else {
-            return int.parse(b.year).compareTo(int.parse(a.year));
-          }
-        });
-
-        return BlocListener<CalculatorBloc, CalculatorState>(
-          listener: (context, state) {
-            if (state is CalculatorLoading) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('재계산 중...')));
-            } else if (state is RecognitionCalculated) {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            } else if (state is CalculatorError) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  SnackBar(
-                    content: Text('오류: ${state.message}'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+          sortedDetails.sort((a, b) {
+            if (_isSortAscending) {
+              return a.installmentNo.compareTo(b.installmentNo);
+            } else {
+              return b.installmentNo.compareTo(a.installmentNo);
             }
-          },
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('계산 결과'),
-              centerTitle: true,
-              backgroundColor: colorScheme.primaryContainer,
-            ),
-            body: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        '계산 요약',
-                        style: textTheme.titleLarge!.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(
-                          Icons.info_outline,
-                          size: 24.sp,
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                        onPressed: () => _showCalculationInfoDialog(context),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16.h),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: colorScheme.outline.withValues(alpha: 0.5),
-                      ),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Row(
+          });
+
+          final yearlySummaries = buildYearlySummaries(
+            sortedDetails,
+            isSortAscending: _isSortAscending,
+          );
+
+          return Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${DateFormat('yyyy.MM').format(resultEntity.startDate)} ~ ${DateFormat('yyyy.MM').format(resultEntity.endDate)} 매월${resultEntity.paymentDay}일',
-                                style: textTheme.bodyMedium,
-                              ),
-                              Text.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text:
-                                          '${NumberFormat('#,###').format(resultEntity.totalRecognizedAmount)}원',
-                                      style: textTheme.titleLarge!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: colorScheme.primary,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text:
-                                          ' (${resultEntity.recognizedRounds}회차)',
-                                      style: textTheme.bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              _buildUnrecognizedRoundsInfo(
-                                resultEntity.unrecognizedRounds,
-                              ),
-                            ],
+                        Text(
+                          '계산 요약',
+                          style: textTheme.titleLarge!.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Expanded(
-                          flex: 1,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Icon(
-                              Icons.account_balance_wallet_outlined,
-                              size: 36.w,
-                              color: colorScheme.primary,
-                            ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            Icons.info_outline,
+                            size: 24.sp,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
+                          onPressed: () => _showCalculationInfoDialog(context),
                         ),
                       ],
                     ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: colorScheme.outline.withValues(alpha: 0.5),
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  SizedBox(height: 12.h),
-                  if (_showNotification)
-                    Dismissible(
-                      key: const ValueKey('payment_date_notification'),
-                      onDismissed: (direction) {
-                        setState(() {
-                          _showNotification = false;
-                        });
-                      },
-                      child: Card(
-                        margin: EdgeInsets.only(bottom: 12.h),
-                        color: colorScheme.surfaceContainer,
-                        child: Padding(
-                          padding: EdgeInsets.all(6.w),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '회차별 실제납입일 및 납입금액을 확인하고 변경해 주세요.',
-                                  style: textTheme.bodyMedium!.copyWith(
-                                    color: colorScheme.onSecondaryContainer,
-                                    fontSize: 12.sp,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${DateFormat('yyyy.MM').format(resultEntity.startDate)} ~ ${DateFormat('yyyy.MM').format(resultEntity.endDate)} 매월${resultEntity.paymentDay}일',
+                              style: textTheme.bodyMedium,
+                            ),
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        '${NumberFormat('#,###').format(resultEntity.totalRecognizedAmount)}원',
+                                    style: textTheme.titleLarge!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.primary,
+                                    ),
                                   ),
-                                ),
+                                  TextSpan(
+                                    text:
+                                        ' (${resultEntity.recognizedRounds}회차)',
+                                    style: textTheme.bodyMedium,
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.close,
-                                  color: colorScheme.onSecondaryContainer,
-                                ),
-                                iconSize: 18.w,
-                                onPressed: () {
-                                  setState(() {
-                                    _showNotification = false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
+                            ),
+                            _buildUnrecognizedRoundsInfo(
+                              resultEntity.unrecognizedRounds,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            '상세 내역',
-                            style: textTheme.titleLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
+                      Expanded(
+                        flex: 1,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             icon: Icon(
-                              Icons.swap_vert,
-                              size: 24.sp,
+                              Icons.save_alt_outlined,
+                              size: 36.w,
                               color: colorScheme.onSurface.withValues(
                                 alpha: 0.8,
                               ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _isSortAscending = !_isSortAscending;
-                              });
+                            onPressed: () async {
+                              final shouldSave =
+                                  await _showSaveConfirmationDialog(context);
+
+                              if (shouldSave) {
+                                _calculatorBloc.add(
+                                  SaveCalculationResult(resultEntity),
+                                );
+                              }
                             },
                           ),
-                        ],
+                        ),
                       ),
-                      SizedBox(
-                        // Wrap IconButton in SizedBox for consistent tap target size
-                        width: 48.w, // Standard tap target size
-                        height: 48.h, // Standard tap target size
-                        child: IconButton(
-                          padding: EdgeInsets.zero, // Remove default padding
-                          icon: Icon(Icons.edit_calendar_outlined),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                if (_showNotification)
+                  Dismissible(
+                    key: const ValueKey('payment_date_notification'),
+                    onDismissed: (direction) {
+                      setState(() {
+                        _showNotification = false;
+                      });
+                    },
+                    child: Card(
+                      margin: EdgeInsets.only(bottom: 12.h),
+                      color: colorScheme.surfaceContainer,
+                      child: Padding(
+                        padding: EdgeInsets.all(6.w),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '회차별 실제납입일 및 납입금액을 확인하고 변경해 주세요.',
+                                style: textTheme.bodyMedium!.copyWith(
+                                  color: colorScheme.onSecondaryContainer,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.close,
+                                color: colorScheme.onSecondaryContainer,
+                              ),
+                              iconSize: 18.w,
+                              onPressed: () {
+                                setState(() {
+                                  _showNotification = false;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          '상세 내역',
+                          style: textTheme.titleLarge!.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            Icons.swap_vert,
+                            size: 24.sp,
+                            color: colorScheme.onSurface.withValues(alpha: 0.8),
+                          ),
                           onPressed: () {
+                            setState(() {
+                              _isSortAscending = !_isSortAscending;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      width: 48.w,
+                      height: 48.h,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.tune, color: colorScheme.primary),
+                        onPressed: () async {
+                          final action =
+                              await ResultActionsHelper.showActionSheet(
+                                context,
+                              );
+
+                          if (action == ResultAction.bulkChange) {
+                            // Keeps current bulk change flow but makes it selectable.
                             showDialog(
                               context: context,
                               builder: (_) => BlocProvider.value(
@@ -305,222 +429,44 @@ class _CalculatorResultMobileBodyState
                                 ),
                               ),
                             );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(),
-                  SizedBox(height: 8.h),
-                  Expanded(
-                    child: _buildDetailedHistory(
-                      context,
-                      yearlySummaries,
-                      resultEntity, // Pass resultEntity
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailedHistory(
-    BuildContext context,
-    List<YearlySummary> summaries,
-    RecognitionCalculationResultEntity resultEntity, // Pass resultEntity
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return ListView.builder(
-      itemCount: summaries.length,
-      itemBuilder: (context, index) {
-        final summary = summaries[index];
-        final yearlyRecognizedRounds = summary.monthlyDetails
-            .where((d) => d.recordEntity.isRecognized)
-            .length;
-        final yearlyTotalAmount = summary.monthlyDetails.fold<int>(
-          0,
-          (sum, d) => sum + d.recordEntity.recognizedAmountForRound,
-        );
-
-        final yearlyUnrecognizedRounds = summary.monthlyDetails
-            .where((d) => !d.recordEntity.isRecognized)
-            .length;
-
-        return ExpansionTile(
-          tilePadding: EdgeInsets.zero,
-          shape: Border.all(color: Colors.transparent),
-          collapsedShape: Border.all(color: Colors.transparent),
-          leading: Container(
-            padding: EdgeInsets.all(10.r),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.secondaryContainer,
-            ),
-            child: Text(
-              summary.year,
-              style: textTheme.bodyLarge!.copyWith(
-                color: colorScheme.onSecondaryContainer,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '인정금액 ${NumberFormat('#,###').format(yearlyTotalAmount)}원 ($yearlyRecognizedRounds회)',
-                style: textTheme.titleMedium!.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.sp,
-                ),
-              ),
-              _buildUnrecognizedRoundsInfo(yearlyUnrecognizedRounds),
-            ],
-          ),
-          children: summary.monthlyDetails.map((detail) {
-            return _buildMonthlyDetailRow(
-              context,
-              detail,
-              resultEntity, // Pass resultEntity
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  Widget _buildMonthlyDetailRow(
-    BuildContext context,
-    MonthlyDetail detail,
-    RecognitionCalculationResultEntity resultEntity, // Pass resultEntity
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final record = detail.recordEntity;
-
-    return Padding(
-      padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
-      child: Row(
-        children: [
-          Container(
-            width: 50.w,
-            height: 50.w,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  record.installmentNo.toString().padLeft(2, '0'),
-                  style: textTheme.titleMedium!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                Text(
-                  '${record.dueDate.month}월',
-                  style: textTheme.bodySmall!.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text.rich(
-                  TextSpan(
-                    style: textTheme.bodyMedium!.copyWith(fontSize: 13.sp),
-                    children: [
-                      TextSpan(
-                        text:
-                            '납입일 ${DateFormat('yyyy.MM.dd').format(record.paidDate)} ',
-                      ),
-                      TextSpan(
-                        text: record.status,
-                        style: TextStyle(
-                          color: record.status == '지연'
-                              ? colorScheme.error
-                              : record.status == '선납'
-                              ? colorScheme.tertiary
-                              : colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text:
-                            '${NumberFormat('#,###').format(record.paidAmount)}원',
-                        style: textTheme.bodyMedium!.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 13.sp,
-                        ),
-                      ),
-                      TextSpan(
-                        text: () {
-                          if (record.isRecognized) {
-                            return ' (인정)';
-                          } else {
-                            final now = DateTime.now();
-                            final today = DateTime(
-                              now.year,
-                              now.month,
-                              now.day,
-                            );
-                            final difference = record.recognizedDate.difference(
-                              today,
-                            );
-                            final daysRemaining = difference.inDays;
-
-                            if (daysRemaining > 0) {
-                              return ' (미인정, D-$daysRemaining일)';
-                            } else {
-                              return ' (미인정)'; // recognizedDate is today or in the past
+                          } else if (action == ResultAction.addRound) {
+                            final request =
+                                ResultActionsHelper.buildAddRoundRequest(
+                                  resultEntity,
+                                );
+                            if (request == null) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context)
+                                ..hideCurrentSnackBar()
+                                ..showSnackBar(
+                                  const SnackBar(
+                                    content: Text('추가할 회차 정보가 없습니다.'),
+                                  ),
+                                );
+                              return;
                             }
+                            _calculatorBloc.add(
+                              CalculateRecognition(requestEntity: request),
+                            );
                           }
-                        }(),
-                        style: textTheme.bodyMedium!.copyWith(
-                          color: record.isRecognized
-                              ? colorScheme.primary
-                              : colorScheme.error,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        },
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                Divider(),
+                SizedBox(height: 8.h),
+                Expanded(
+                  child: DetailedHistoryList(
+                    summaries: yearlySummaries,
+                    resultEntity: resultEntity,
+                    onRecalculate: _requestRecalculation,
                   ),
                 ),
               ],
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              PaymentDetailBottomSheet.show(
-                context,
-                record: record,
-                resultEntity: resultEntity,
-              );
-            },
-            child: Icon(Icons.more_horiz),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -581,5 +527,32 @@ class _CalculatorResultMobileBodyState
         );
       },
     );
+  }
+
+  Future<RecognitionCalculationResultEntity> _requestRecalculation(
+    RecognitionCalculatorRequestEntity request,
+  ) {
+    final completer = Completer<RecognitionCalculationResultEntity>();
+    StreamSubscription<CalculatorState>? subscription;
+
+    subscription = _calculatorBloc.stream.listen((state) {
+      if (state is RecognitionCalculated) {
+        if (!completer.isCompleted) {
+          completer.complete(state.result);
+        }
+        subscription?.cancel();
+      } else if (state is CalculatorError) {
+        if (!completer.isCompleted) {
+          completer.completeError(Exception(state.message));
+        }
+        subscription?.cancel();
+      }
+    });
+
+    _calculatorBloc.add(CalculateRecognition(requestEntity: request));
+
+    return completer.future.whenComplete(() {
+      subscription?.cancel();
+    });
   }
 }

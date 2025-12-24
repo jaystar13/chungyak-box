@@ -1,27 +1,20 @@
-import 'package:chungyak_box/data/datasources/admob_services.dart';
+import 'dart:async';
+
 import 'package:chungyak_box/domain/entities/recognition_calculation_result_entity.dart';
+import 'package:chungyak_box/domain/entities/recognition_calculator_request_entity.dart';
 import 'package:chungyak_box/domain/entities/recognition_round_record_entity.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/calculator_event.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_state.dart';
-import 'package:chungyak_box/presentation/widgets/payment_detail_bottom_sheet.dart';
+import 'package:chungyak_box/presentation/widgets/calculator/detailed_history_list.dart';
+import 'package:chungyak_box/presentation/widgets/calculator/result_actions_helper.dart';
 import 'package:chungyak_box/presentation/widgets/calculator/bulk_change_dialog.dart';
+import 'package:chungyak_box/presentation/widgets/payment_detail_bottom_sheet.dart';
+import 'package:chungyak_box/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-
-class YearlySummary {
-  final String year;
-  final List<MonthlyDetail> monthlyDetails;
-
-  YearlySummary({required this.year, required this.monthlyDetails});
-}
-
-class MonthlyDetail {
-  final RecognitionRoundRecordEntity recordEntity;
-
-  MonthlyDetail({required this.recordEntity});
-}
 
 class CalculatorResultTabletBody extends StatefulWidget {
   const CalculatorResultTabletBody({super.key});
@@ -36,115 +29,219 @@ class _CalculatorResultTabletBodyState
   bool _showNotification = true;
   bool _isSortAscending = false;
   String? _selectedYear;
+  late final CalculatorBloc _calculatorBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculatorBloc = context.read<CalculatorBloc>();
+  }
+
+  Future<bool> _showAuthDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('로그인 필요'),
+          content: const Text('계산 결과를 저장하려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('확인'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      final loginResult = await Navigator.of(
+        context,
+      ).pushNamed(Routes.login, arguments: {'from': Routes.calculatorResult});
+      return loginResult == true;
+    }
+
+    return false;
+  }
+
+  Future<bool> _showSaveConfirmationDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('확인'),
+          content: const Text('나의 청약으로 저장하시겠습니까?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final Object? arguments = ModalRoute.of(context)!.settings.arguments;
-
-    return BlocBuilder<CalculatorBloc, CalculatorState>(
-      builder: (context, state) {
-        final RecognitionCalculationResultEntity resultEntity;
-        if (state is RecognitionCalculated) {
-          resultEntity = state.result;
-        } else if (arguments is RecognitionCalculationResultEntity) {
-          resultEntity = arguments;
-        } else {
-          return Scaffold(
-            appBar: AppBar(title: const Text('계산 결과')),
-            body: const Center(child: Text('결과 데이터를 불러오는 데 실패했습니다.')),
-          );
-        }
-
-        final sortedDetails = List<RecognitionRoundRecordEntity>.from(
-          resultEntity.details,
-        );
-        sortedDetails.sort(
-          (a, b) => _isSortAscending
-              ? a.installmentNo.compareTo(b.installmentNo)
-              : b.installmentNo.compareTo(a.installmentNo),
-        );
-
-        final Map<int, List<MonthlyDetail>> groupedByYear = {};
-        for (var record in sortedDetails) {
-          final year = record.dueDate.year;
-          groupedByYear
-              .putIfAbsent(year, () => [])
-              .add(MonthlyDetail(recordEntity: record));
-        }
-
-        final yearlySummaries = groupedByYear.entries
-            .map(
-              (entry) => YearlySummary(
-                year: entry.key.toString(),
-                monthlyDetails: entry.value,
+    return BlocListener<CalculatorBloc, CalculatorState>(
+      listener: (context, state) async {
+        if (state is CalculatorLoading) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('재계산 중...')));
+        } else if (state is RecognitionCalculated) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        } else if (state is CalculatorError) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('오류: ${state.message}'),
+                backgroundColor: Colors.red,
               ),
-            )
-            .toList();
-        yearlySummaries.sort(
-          (a, b) => _isSortAscending
-              ? int.parse(a.year).compareTo(int.parse(b.year))
-              : int.parse(b.year).compareTo(int.parse(a.year)),
-        );
-
-        if (_selectedYear == null && yearlySummaries.isNotEmpty) {
-          _selectedYear = yearlySummaries.first.year;
-        }
-
-        final selectedYearSummary = yearlySummaries
-            .where((s) => s.year == _selectedYear)
-            .firstOrNull;
-
-        return BlocListener<CalculatorBloc, CalculatorState>(
-          listener: (context, state) {
-            // Listener logic remains the same
-          },
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('계산 결과'),
-              centerTitle: true,
-              backgroundColor: colorScheme.primaryContainer,
-            ),
-            body: Padding(
-              padding: EdgeInsets.all(24.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSummarySection(context, resultEntity),
-                  SizedBox(height: 12.h),
-                  if (_showNotification) _buildNotificationCard(context),
-                  _buildDetailedHistoryTitle(context, resultEntity),
-                  const Divider(),
-                  SizedBox(height: 8.h),
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Left side: Year list (Master)
-                        Expanded(
-                          flex: 1,
-                          child: _buildYearList(context, yearlySummaries),
-                        ),
-                        const VerticalDivider(width: 1),
-                        // Right side: Details for selected year (Detail)
-                        Expanded(
-                          flex: 4,
-                          child: _buildDetailsForYear(
-                            context,
-                            selectedYearSummary,
-                            resultEntity,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            );
+        } else if (state is CalculatorSaving) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('계산 결과를 저장 중...')));
+        } else if (state is CalculatorSaveSuccess) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('계산 결과가 성공적으로 저장되었습니다.'),
+                backgroundColor: Colors.green,
               ),
-            ),
-            bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
-          ),
-        );
+            );
+        } else if (state is CalculatorSaveError) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('계산 결과 저장 실패: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+        } else if (state is CalculatorAuthRequired) {
+          final loginSuccess = await _showAuthDialog(context);
+
+          if (loginSuccess) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            _calculatorBloc.add(SaveCalculationResult(state.result));
+          } else {
+            _calculatorBloc.add(const CalculationStateReset());
+          }
+        }
       },
+      child: BlocBuilder<CalculatorBloc, CalculatorState>(
+        buildWhen: (previous, current) {
+          return current is RecognitionCalculated ||
+              current is InitialCalculationSuccess ||
+              current is CalculatorLoading ||
+              current is CalculatorError;
+        },
+        builder: (context, state) {
+          final Object? arguments = ModalRoute.of(context)!.settings.arguments;
+
+          final RecognitionCalculationResultEntity? nullableResultEntity;
+          if (state is RecognitionCalculated) {
+            nullableResultEntity = state.result;
+          } else if (state is InitialCalculationSuccess) {
+            nullableResultEntity = state.result;
+          } else if (arguments is RecognitionCalculationResultEntity) {
+            nullableResultEntity = arguments;
+          } else {
+            nullableResultEntity = null;
+          }
+
+          if (nullableResultEntity == null) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  '결과 데이터를 불러오는 데 실패했습니다.\n이전 화면에서 다시 시도해주세요.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          final RecognitionCalculationResultEntity resultEntity =
+              nullableResultEntity;
+
+          final sortedDetails = List<RecognitionRoundRecordEntity>.from(
+            resultEntity.details,
+          );
+          sortedDetails.sort(
+            (a, b) => _isSortAscending
+                ? a.installmentNo.compareTo(b.installmentNo)
+                : b.installmentNo.compareTo(a.installmentNo),
+          );
+
+          final yearlySummaries = buildYearlySummaries(
+            sortedDetails,
+            isSortAscending: _isSortAscending,
+          );
+
+          if (_selectedYear == null && yearlySummaries.isNotEmpty) {
+            _selectedYear = yearlySummaries.first.year;
+          }
+
+          final selectedYearSummary = yearlySummaries
+              .where((s) => s.year == _selectedYear)
+              .firstOrNull;
+
+          return Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummarySection(context, resultEntity),
+                SizedBox(height: 12.h),
+                if (_showNotification) _buildNotificationCard(context),
+                _buildDetailedHistoryTitle(context, resultEntity),
+                const Divider(),
+                SizedBox(height: 8.h),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: _buildYearList(context, yearlySummaries),
+                      ),
+                      const VerticalDivider(width: 1),
+                      Expanded(
+                        flex: 4,
+                        child: _buildDetailsForYear(
+                          context,
+                          selectedYearSummary,
+                          resultEntity,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -178,7 +275,7 @@ class _CalculatorResultTabletBodyState
         ),
         SizedBox(height: 16.h),
         Container(
-          padding: EdgeInsets.all(20.w),
+          padding: EdgeInsets.fromLTRB(20.w, 12.w, 10.w, 12.w),
           decoration: BoxDecoration(
             border: Border.all(
               color: colorScheme.outline.withValues(alpha: 0.5),
@@ -219,10 +316,18 @@ class _CalculatorResultTabletBodyState
                   ],
                 ),
               ),
-              Icon(
-                Icons.account_balance_wallet_outlined,
-                size: 36.sp,
-                color: colorScheme.primary,
+              IconButton(
+                icon: Icon(
+                  Icons.save_alt_outlined,
+                  size: 30.sp,
+                  color: colorScheme.primary,
+                ),
+                onPressed: () async {
+                  final shouldSave = await _showSaveConfirmationDialog(context);
+                  if (shouldSave) {
+                    _calculatorBloc.add(SaveCalculationResult(resultEntity));
+                  }
+                },
               ),
             ],
           ),
@@ -241,13 +346,13 @@ class _CalculatorResultTabletBodyState
         margin: EdgeInsets.only(bottom: 12.h),
         color: colorScheme.surfaceContainer,
         child: Padding(
-          padding: EdgeInsets.all(8.w),
+          padding: EdgeInsets.fromLTRB(8.w, 8.w, 12.w, 8.w),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   '회차별 실제납입일 및 납입금액을 확인하고 변경해 주세요.',
-                  style: textTheme.bodyMedium!.copyWith(
+                  style: textTheme.bodyLarge!.copyWith(
                     color: colorScheme.onSecondaryContainer,
                   ),
                 ),
@@ -273,53 +378,80 @@ class _CalculatorResultTabletBodyState
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Text(
-              '상세 내역',
-              style: textTheme.titleLarge!.copyWith(
-                fontWeight: FontWeight.bold,
+    return Padding(
+      padding: EdgeInsets.only(right: 12.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Text(
+                '상세 내역',
+                style: textTheme.titleLarge!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.swap_vert,
-                size: 18.sp,
-                color: colorScheme.onSurface.withValues(alpha: 0.8),
+              IconButton(
+                icon: Icon(
+                  Icons.swap_vert,
+                  size: 18.sp,
+                  color: colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
+                onPressed: () => setState(() {
+                  _isSortAscending = !_isSortAscending;
+                  _selectedYear = null; // Reset selection to re-init
+                }),
               ),
-              onPressed: () => setState(() {
-                _isSortAscending = !_isSortAscending;
-                _selectedYear = null; // Reset selection to re-init
-              }),
-            ),
-          ],
-        ),
-        IconButton(
-          icon: Icon(Icons.edit_calendar_outlined, size: 18.sp),
-          onPressed: () => showDialog(
-            context: context,
-            builder: (_) => BlocProvider.value(
-              value: BlocProvider.of<CalculatorBloc>(context),
-              child: BulkChangeDialog(resultEntity: resultEntity),
-            ),
+            ],
           ),
-        ),
-      ],
+          IconButton(
+            icon: Icon(Icons.tune, size: 18.sp, color: colorScheme.primary),
+            onPressed: () async {
+              final action = await ResultActionsHelper.showActionSheet(context);
+              if (action == null) return;
+
+              if (action == ResultAction.bulkChange) {
+                showDialog(
+                  context: context,
+                  builder: (_) => BlocProvider.value(
+                    value: BlocProvider.of<CalculatorBloc>(context),
+                    child: BulkChangeDialog(resultEntity: resultEntity),
+                  ),
+                );
+              } else if (action == ResultAction.addRound) {
+                final request = ResultActionsHelper.buildAddRoundRequest(
+                  resultEntity,
+                );
+                if (request == null) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(content: Text('추가할 회차 정보가 없습니다.')),
+                    );
+                  return;
+                }
+                _calculatorBloc.add(
+                  CalculateRecognition(requestEntity: request),
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildYearList(BuildContext context, List<YearlySummary> summaries) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return ListView.builder(
       itemCount: summaries.length,
       itemBuilder: (context, index) {
         final summary = summaries[index];
         final isSelected = summary.year == _selectedYear;
         return ListTile(
-          title: Text('${summary.year}년'),
+          title: Text('${summary.year}년', style: textTheme.bodyLarge),
           selected: isSelected,
           selectedTileColor: colorScheme.primary.withValues(alpha: 0.1),
           onTap: () => setState(() => _selectedYear = summary.year),
@@ -346,7 +478,7 @@ class _CalculatorResultTabletBodyState
               (label) => DataColumn(
                 label: Text(
                   label,
-                  style: textTheme.bodyMedium!.copyWith(
+                  style: textTheme.bodyLarge!.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -362,13 +494,17 @@ class _CalculatorResultTabletBodyState
                   '${record.installmentNo}회',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium,
                 ),
               ),
               DataCell(
                 Text(
-                  DateFormat('yy.MM.dd').format(record.paidDate),
+                  record.paidDate != null
+                      ? DateFormat('yy.MM.dd').format(record.paidDate!)
+                      : '-',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium,
                 ),
               ),
               DataCell(
@@ -376,6 +512,7 @@ class _CalculatorResultTabletBodyState
                   '${NumberFormat('#,###').format(record.paidAmount)}원',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium,
                 ),
               ),
               DataCell(
@@ -388,6 +525,8 @@ class _CalculatorResultTabletBodyState
                         ? Colors.red
                         : record.status == '선납'
                         ? Colors.blue
+                        : record.status == '미납'
+                        ? Colors.red
                         : Colors.green,
                   ),
                 ),
@@ -404,12 +543,19 @@ class _CalculatorResultTabletBodyState
                 ),
               ),
               DataCell(
-                IconButton(
-                  icon: Icon(Icons.more_horiz, size: 18.sp),
-                  onPressed: () => PaymentDetailBottomSheet.show(
-                    context,
-                    record: record,
-                    resultEntity: resultEntity,
+                Padding(
+                  padding: EdgeInsets.only(right: 12.w),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.more_horiz, size: 16.sp),
+                      onPressed: () => PaymentDetailBottomSheet.show(
+                        context,
+                        record: record,
+                        resultEntity: resultEntity,
+                        onRecalculate: _requestRecalculation,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -430,13 +576,13 @@ class _CalculatorResultTabletBodyState
         padding: EdgeInsets.only(top: 4.h),
         child: Text(
           '미인정회차 $unrecognizedRounds회 있음',
-          style: textTheme.bodyMedium!.copyWith(color: colorScheme.error),
+          style: textTheme.bodyLarge!.copyWith(color: colorScheme.error),
         ),
       );
     } else {
       return Padding(
         padding: EdgeInsets.only(top: 4.h),
-        child: Text('미인정회차 없음', style: textTheme.bodyMedium),
+        child: Text('미인정회차 없음', style: textTheme.bodyLarge),
       );
     }
   }
@@ -478,5 +624,32 @@ class _CalculatorResultTabletBodyState
         );
       },
     );
+  }
+
+  Future<RecognitionCalculationResultEntity> _requestRecalculation(
+    RecognitionCalculatorRequestEntity request,
+  ) {
+    final completer = Completer<RecognitionCalculationResultEntity>();
+    StreamSubscription<CalculatorState>? subscription;
+
+    subscription = _calculatorBloc.stream.listen((state) {
+      if (state is RecognitionCalculated) {
+        if (!completer.isCompleted) {
+          completer.complete(state.result);
+        }
+        subscription?.cancel();
+      } else if (state is CalculatorError) {
+        if (!completer.isCompleted) {
+          completer.completeError(Exception(state.message));
+        }
+        subscription?.cancel();
+      }
+    });
+
+    _calculatorBloc.add(CalculateRecognition(requestEntity: request));
+
+    return completer.future.whenComplete(() {
+      subscription?.cancel();
+    });
   }
 }

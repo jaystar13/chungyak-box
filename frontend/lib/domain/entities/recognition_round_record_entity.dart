@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 class RecognitionRoundRecordEntity extends Equatable {
   final int installmentNo;
   final DateTime dueDate;
-  final DateTime paidDate;
-  final DateTime recognizedDate;
+  final DateTime? paidDate;
+  final DateTime? recognizedDate;
   final int delayDays;
   final int totalDelayDays;
   final int prepaidDays;
@@ -17,8 +17,8 @@ class RecognitionRoundRecordEntity extends Equatable {
   const RecognitionRoundRecordEntity({
     required this.installmentNo,
     required this.dueDate,
-    required this.paidDate,
-    required this.recognizedDate,
+    this.paidDate,
+    this.recognizedDate,
     required this.delayDays,
     required this.totalDelayDays,
     required this.prepaidDays,

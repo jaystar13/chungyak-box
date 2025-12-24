@@ -38,6 +38,7 @@ class _TermsMobileBodyState extends State<TermsMobileBody> {
   Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {
+        final colorscheme = Theme.of(context).colorScheme;
         if (state is LoginLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -111,18 +112,24 @@ class _TermsMobileBodyState extends State<TermsMobileBody> {
                     onPressed: isButtonEnabled
                         ? () {
                             final agreedIds = <String>[];
-                            if (_termsOfUseAgreed && latestTerms.termsOfUse != null) {
+                            if (_termsOfUseAgreed &&
+                                latestTerms.termsOfUse != null) {
                               agreedIds.add(latestTerms.termsOfUse!.id);
                             }
-                            if (_privacyPolicyAgreed && latestTerms.privacyPolicy != null) {
+                            if (_privacyPolicyAgreed &&
+                                latestTerms.privacyPolicy != null) {
                               agreedIds.add(latestTerms.privacyPolicy!.id);
                             }
-                            context
-                                .read<LoginBloc>()
-                                .add(TermsAccepted(agreedTermsIds: agreedIds));
+                            context.read<LoginBloc>().add(
+                              TermsAccepted(agreedTermsIds: agreedIds),
+                            );
                           }
                         : null,
-                    child: const Text('동의하고 계속하기'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorscheme.primary,
+                      foregroundColor: colorscheme.onPrimary,
+                    ),
+                    child: Text('동의하고 계속하기', style: TextStyle(fontSize: 16)),
                   ),
                 ),
                 SizedBox(height: 40.h),
@@ -130,9 +137,7 @@ class _TermsMobileBodyState extends State<TermsMobileBody> {
             ),
           );
         }
-        return const Center(
-          child: Text('약관을 불러오는 중입니다...'),
-        );
+        return const Center(child: Text('약관을 불러오는 중입니다...'));
       },
     );
   }

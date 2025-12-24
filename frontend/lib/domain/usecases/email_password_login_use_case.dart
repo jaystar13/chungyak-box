@@ -8,7 +8,10 @@ class EmailPasswordLoginUseCase {
   final AuthRepository _authRepository;
   EmailPasswordLoginUseCase(this._authRepository);
 
-  Future<Result<LoginResponseEntity>> call(String email, String password) async {
+  Future<Result<LoginResponseEntity>> call(
+    String email,
+    String password,
+  ) async {
     return await _authRepository.login(email, password);
   }
 }

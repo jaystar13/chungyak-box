@@ -58,8 +58,9 @@ extension RecognitionRoundRecordMapper on RecognitionRoundRecordModel {
     return RecognitionRoundRecordEntity(
       installmentNo: installmentNo,
       dueDate: DateTime.parse(dueDate),
-      paidDate: DateTime.parse(paidDate),
-      recognizedDate: DateTime.parse(recognizedDate),
+      paidDate: paidDate != null ? DateTime.parse(paidDate!) : null,
+      recognizedDate:
+          recognizedDate != null ? DateTime.parse(recognizedDate!) : null,
       delayDays: delayDays,
       totalDelayDays: totalDelayDays,
       prepaidDays: prepaidDays,
@@ -83,6 +84,40 @@ extension RecognitionCalculationResultMapper
       unrecognizedRounds: unrecognizedRounds,
       totalRecognizedAmount: totalRecognizedAmount,
       details: details.map((e) => e.toEntity()).toList(),
+    );
+  }
+}
+
+extension RecognitionRoundRecordEntityMapper on RecognitionRoundRecordEntity {
+  RecognitionRoundRecordModel toModel() {
+    return RecognitionRoundRecordModel(
+      installmentNo: installmentNo,
+      dueDate: dueDate.toIso8601String().split('T').first,
+      paidDate: paidDate?.toIso8601String().split('T').first,
+      recognizedDate: recognizedDate?.toIso8601String().split('T').first,
+      delayDays: delayDays,
+      totalDelayDays: totalDelayDays,
+      prepaidDays: prepaidDays,
+      totalPrepaidDays: totalPrepaidDays,
+      status: status,
+      isRecognized: isRecognized,
+      paidAmount: paidAmount,
+      recognizedAmountForRound: recognizedAmountForRound,
+    );
+  }
+}
+
+extension RecognitionCalculationResultEntityMapper
+    on RecognitionCalculationResultEntity {
+  RecognitionCalculationResultModel toModel() {
+    return RecognitionCalculationResultModel(
+      paymentDay: paymentDay,
+      startDate: startDate.toIso8601String().split('T').first,
+      endDate: endDate.toIso8601String().split('T').first,
+      recognizedRounds: recognizedRounds,
+      unrecognizedRounds: unrecognizedRounds,
+      totalRecognizedAmount: totalRecognizedAmount,
+      details: details.map((e) => e.toModel()).toList(),
     );
   }
 }

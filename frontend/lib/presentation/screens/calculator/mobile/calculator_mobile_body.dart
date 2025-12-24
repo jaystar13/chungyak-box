@@ -1,9 +1,10 @@
+import 'package:chungyak_box/presentation/layouts/main_layout.dart';
+import 'package:chungyak_box/presentation/screens/calculator/calculator_result_screen.dart';
 import 'package:chungyak_box/data/datasources/admob_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:chungyak_box/presentation/widgets/date_picker_dialog.dart';
 
 import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart';
@@ -18,23 +19,19 @@ class CalculatorMobileBody extends StatefulWidget {
   State<CalculatorMobileBody> createState() => _CalculatorMobileBodyState();
 }
 
-enum PaymentAmountOption { maxRecognized, customAmount }
-
 class _CalculatorMobileBodyState extends State<CalculatorMobileBody> {
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  final TextEditingController _customAmountController = TextEditingController();
 
   int? _selectedPaymentDay;
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
-  PaymentAmountOption _paymentAmountOption = PaymentAmountOption.maxRecognized;
+  bool _isGuideExpanded = true;
 
   @override
   void dispose() {
     _startDateController.dispose();
     _endDateController.dispose();
-    _customAmountController.dispose();
     super.dispose();
   }
 
@@ -63,56 +60,6 @@ class _CalculatorMobileBodyState extends State<CalculatorMobileBody> {
         }
       });
     }
-  }
-
-  Widget _buildGroupContainer({
-    required BuildContext context,
-    required String title,
-    required Widget child,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Stack(
-      children: [
-        Container(
-          margin: EdgeInsets.only(
-            top: 12.h,
-            bottom: 8.h,
-          ), // Adjusted margin to make space for title
-          padding: EdgeInsets.all(16.r),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.5),
-            ),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Padding(
-            // Added padding for the child content
-            padding: EdgeInsets.only(
-              top: 12.h,
-            ), // Push content down to avoid title overlap
-            child: child,
-          ),
-        ),
-        Positioned(
-          left: 16.w, // Align with the padding of the container
-          top: 0, // Position at the top edge
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-            color:
-                colorScheme.surface, // Background color to hide the border line
-            child: Text(
-              title,
-              style: textTheme.titleMedium!.copyWith(
-                color: colorScheme.primary,
-                fontSize: 16.sp,
-              ), // Emphasize title
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -154,11 +101,23 @@ class _CalculatorMobileBodyState extends State<CalculatorMobileBody> {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(const SnackBar(content: Text('계산 중...')));
-            } else if (state is RecognitionCalculated) {
+            } else if (state is InitialCalculationSuccess) {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              Navigator.of(context).pushNamed(
-                '/calculator/result',
-                arguments: state.result, // Pass the result to the next screen
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<CalculatorBloc>(), // Use existing BLoC
+                    child: const MainLayout(
+                      title: '계산 결과',
+                      bottomNavigationBar: SafeArea(child: BannerAdWidget()),
+                      child: CalculatorResultScreen(),
+                    ),
+                  ),
+                  settings: RouteSettings(
+                    name: '/calculator/result',
+                    arguments: state.result,
+                  ),
+                ),
               );
             } else if (state is CalculatorError) {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -170,231 +129,192 @@ class _CalculatorMobileBodyState extends State<CalculatorMobileBody> {
               );
             }
           },
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('청약 납입 계산기'),
-              centerTitle: true,
-              backgroundColor: colorScheme.primaryContainer,
-              elevation: 2,
-            ),
-            body: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.h),
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedPaymentDay,
-                    items: List.generate(28, (index) => index + 1)
-                        .map(
-                          (day) => DropdownMenuItem(
-                            value: day,
-                            child: Text('$day일'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) =>
-                        setState(() => _selectedPaymentDay = value),
-                    decoration: inputDecoration.copyWith(
-                      labelText:
-                          '납입일 선택 (1일 ~ 28일)', // Use labelText for floating effect
-                    ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 16.h),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  SizedBox(height: 24.h),
-                  TextFormField(
-                    controller: _startDateController,
-                    readOnly: true,
-                    onTap: () =>
-                        _selectMonth(context, _startDateController, true),
-                    decoration: inputDecoration.copyWith(
-                      labelText: '시작일', // Use labelText
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () =>
-                            _selectMonth(context, _startDateController, true),
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 8.h,
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-                  TextFormField(
-                    controller: _endDateController,
-                    readOnly: true,
-                    onTap: () =>
-                        _selectMonth(context, _endDateController, false),
-                    decoration: inputDecoration.copyWith(
-                      labelText: '종료일', // Use labelText
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () =>
-                            _selectMonth(context, _endDateController, false),
+                      childrenPadding:
+                          EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                      initiallyExpanded: _isGuideExpanded,
+                      onExpansionChanged: (expanded) {
+                        setState(() => _isGuideExpanded = expanded);
+                      },
+                      title: Text(
+                        '입력 가이드',
+                        style: textTheme.titleMedium!.copyWith(
+                          color: colorScheme.primary,
+                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-
-                  _buildGroupContainer(
-                    context: context,
-                    title: '납입 금액',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      trailing: Icon(
+                        _isGuideExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: colorScheme.primary,
+                      ),
                       children: [
-                        Text(
-                          '납입 내역 생성에 필요한 초기 납입 금액을 선택합니다. 최대 인정 금액은 2024년 11월 이전 10만원, 이후 25만원입니다.',
-                          style: textTheme.bodyMedium!.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            fontSize: 12.sp,
-                          ),
-                        ),
                         SizedBox(height: 8.h),
-                        CheckboxListTile(
-                          title: Text(
-                            '최대 인정금액으로 계산',
-                            style: textTheme.bodyLarge!.copyWith(
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          value:
-                              _paymentAmountOption ==
-                              PaymentAmountOption.maxRecognized,
-                          onChanged: (bool? value) {
-                            if (value == true) {
-                              setState(
-                                () => _paymentAmountOption =
-                                    PaymentAmountOption.maxRecognized,
-                              );
-                            }
-                          },
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
-                          activeColor: colorScheme.primary,
-                        ),
-                        CheckboxListTile(
-                          title: Text(
-                            '대표 금액을 입력하여 계산',
-                            style: textTheme.bodyLarge!.copyWith(
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          value:
-                              _paymentAmountOption ==
-                              PaymentAmountOption.customAmount,
-                          onChanged: (bool? value) {
-                            if (value == true) {
-                              setState(
-                                () => _paymentAmountOption =
-                                    PaymentAmountOption.customAmount,
-                              );
-                            }
-                          },
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
-                          activeColor: colorScheme.primary,
-                        ),
-                        if (_paymentAmountOption ==
-                            PaymentAmountOption.customAmount)
-                          Padding(
-                            padding: EdgeInsets.only(
-                              top: 8.h,
-                              left: 16.w,
-                              right: 16.w,
-                            ),
-                            child: TextFormField(
-                              controller: _customAmountController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                CurrencyTextInputFormatter.currency(
-                                  locale: 'ko',
-                                  symbol: '',
-                                  decimalDigits: 0,
+                        ...[
+                          '납입일: 매월 청약 금액을 납부하기로 한 약속 일자를 선택합니다.',
+                          '시작년월: 주택청약통장 개설년월을 입력합니다.',
+                          '종료년월: 계산 종료년월을 입력합니다.',
+                        ].map(
+                          (guide) => Padding(
+                            padding: EdgeInsets.only(bottom: 8.h),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 6.w,
+                                  height: 6.w,
+                                  margin: EdgeInsets.only(top: 6.h),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    guide,
+                                    style: textTheme.bodyMedium,
+                                  ),
                                 ),
                               ],
-                              decoration: inputDecoration.copyWith(
-                                labelText: '월 대표 납입액 입력',
-                                suffixText: '원',
-                              ),
-                              textAlign: TextAlign.right,
                             ),
                           ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            '최대인정금액이 변경된 2024년 11월을 기준으로 이전 내역은 10만원, 이후는 25만원의 납입 인정 금액으로 자동 생성됩니다. 금액 및 실제납입일 변경은 납입 내역 생성 후 계산 결과 화면에서 변경할 수 있습니다.',
+                            style: textTheme.bodySmall!.copyWith(
+                              color: colorScheme.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-
-                  SizedBox(height: 18.h),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_selectedPaymentDay == null ||
-                            _selectedStartDate == null ||
-                            _selectedEndDate == null) {
-                          // Show an error or a snackbar indicating missing fields
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('모든 필수 필드를 입력해주세요.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                        String paymentAmountOptionString;
-                        int? standardPaymentAmount;
-
-                        if (_paymentAmountOption ==
-                            PaymentAmountOption.maxRecognized) {
-                          paymentAmountOptionString = 'maximum';
-                        } else {
-                          paymentAmountOptionString = 'standard';
-                          final cleanedAmount = _customAmountController.text
-                              .replaceAll(RegExp(r'[^0-9]'), '');
-                          standardPaymentAmount = int.tryParse(cleanedAmount);
-                          if (standardPaymentAmount == null ||
-                              standardPaymentAmount <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('유효한 납입액을 입력해주세요.'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                            return;
-                          }
-                        }
-
-                        final requestEntity =
-                            RecognitionCalculatorRequestEntity(
-                              paymentDay: _selectedPaymentDay!,
-                              startDate: _selectedStartDate!,
-                              endDate: _selectedEndDate!,
-                              paymentAmountOption: paymentAmountOptionString,
-                              standardPaymentAmount: standardPaymentAmount,
-                              payments:
-                                  null, // Assuming no custom payments for now
-                            );
-
-                        context.read<CalculatorBloc>().add(
-                          CalculateRecognition(requestEntity: requestEntity),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        textStyle: textTheme.titleMedium!.copyWith(
-                          fontSize: 16.sp,
-                        ),
-                      ),
-                      child: const Text('납입 내역 생성'),
+                ),
+                SizedBox(height: 16.h),
+                DropdownButtonFormField<int>(
+                  initialValue: _selectedPaymentDay,
+                  items: List.generate(28, (index) => index + 1)
+                      .map(
+                        (day) =>
+                            DropdownMenuItem(value: day, child: Text('$day일')),
+                      )
+                      .toList(),
+                  onChanged: (value) =>
+                      setState(() => _selectedPaymentDay = value),
+                  decoration: inputDecoration.copyWith(
+                    labelText:
+                        '납입일 선택 (1일 ~ 28일)', // Use labelText for floating effect
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                TextFormField(
+                  controller: _startDateController,
+                  readOnly: true,
+                  onTap: () =>
+                      _selectMonth(context, _startDateController, true),
+                  decoration: inputDecoration.copyWith(
+                    labelText: '시작년월', // Use labelText
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () =>
+                          _selectMonth(context, _startDateController, true),
                     ),
                   ),
-                  SizedBox(height: 20.h),
-                ],
-              ),
+                ),
+                SizedBox(height: 24.h),
+                TextFormField(
+                  controller: _endDateController,
+                  readOnly: true,
+                  onTap: () => _selectMonth(context, _endDateController, false),
+                  decoration: inputDecoration.copyWith(
+                    labelText: '종료년월', // Use labelText
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () =>
+                          _selectMonth(context, _endDateController, false),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 18.h),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_selectedPaymentDay == null ||
+                          _selectedStartDate == null ||
+                          _selectedEndDate == null) {
+                        // Show an error or a snackbar indicating missing fields
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('모든 필수 필드를 입력해주세요.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      final requestEntity = RecognitionCalculatorRequestEntity(
+                        paymentDay: _selectedPaymentDay!,
+                        startDate: _selectedStartDate!,
+                        endDate: _selectedEndDate!,
+                        paymentAmountOption: 'maximum',
+                        standardPaymentAmount: null,
+                        payments: null, // Assuming no custom payments for now
+                      );
+
+                      context.read<CalculatorBloc>().add(
+                        GenerateInitialResult(requestEntity: requestEntity),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      textStyle: textTheme.titleMedium!.copyWith(
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                    child: const Text('납입 내역 생성'),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+              ],
             ),
-            bottomNavigationBar: const SafeArea(child: BannerAdWidget()),
           ),
         );
       },

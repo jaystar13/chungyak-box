@@ -19,4 +19,5 @@ abstract class AuthRepository {
     List<String> agreedTermsIds,
   );
   Future<Result<LoginResponseEntity>> login(String email, String password);
+  Future<Result<void>> deleteAccount();
 }

@@ -64,12 +64,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       await _initializeIfNeeded();
       final googleUser = await _googleSignIn.authenticate();
 
-      if (googleUser == null) {
-        // User cancelled the sign-in
-        emit(const LoginInitial());
-        return;
-      }
-
       final auth = googleUser.authentication;
       final idToken = auth.idToken;
 
@@ -89,7 +83,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               user: socialLoginResult.loginResponse.user,
             ),
           );
-          emit(const LoginSuccess());
         } else if (socialLoginResult is NewUserEntity) {
           final termsResult = await _getLatestTermsUseCase();
           if (termsResult is Success<LatestTermsEntity>) {
@@ -148,7 +141,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               user: socialLoginResult.loginResponse.user,
             ),
           );
-          emit(const LoginSuccess());
         } else if (socialLoginResult is NewUserEntity) {
           final termsResult = await _getLatestTermsUseCase();
           if (termsResult is Success<LatestTermsEntity>) {
@@ -192,7 +184,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         _authBloc.add(
           LoggedIn(token: loginResponse.token, user: loginResponse.user),
         );
-        emit(const LoginSuccess());
       } else {
         emit(
           LoginFailure(message: (result as Error<LoginResponseEntity>).message),
@@ -225,14 +216,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     if (result is Success<LoginResponseEntity>) {
-      _authBloc.add(
-        LoggedIn(token: result.data.token, user: result.data.user),
-      );
-      emit(const LoginSuccess());
+      _authBloc.add(LoggedIn(token: result.data.token, user: result.data.user));
     } else if (result is Error<LoginResponseEntity>) {
-      emit(
-        LoginFailure(message: result.message),
-      );
+      emit(LoginFailure(message: result.message));
     }
   }
 }

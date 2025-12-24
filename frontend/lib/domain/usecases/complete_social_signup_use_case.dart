@@ -13,6 +13,9 @@ class CompleteSocialSignupUseCase {
     required String tempToken,
     required List<String> agreedTermsIds,
   }) async {
-    return await _authRepository.completeSocialSignup(tempToken, agreedTermsIds);
+    return await _authRepository.completeSocialSignup(
+      tempToken,
+      agreedTermsIds,
+    );
   }
 }
