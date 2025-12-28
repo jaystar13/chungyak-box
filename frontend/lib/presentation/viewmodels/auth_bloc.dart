@@ -51,7 +51,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoggedOut(LoggedOut event, Emitter<AuthState> emit) async {
     await _secureStorage.delete(key: 'jwt_token');
-    emit(const Unauthenticated());
+    emit(const Unauthenticated(message: '로그아웃이 완료되었습니다.'));
   }
 
   Future<void> _onDeleteAccount(DeleteAccount event, Emitter<AuthState> emit) async {

@@ -12,3 +12,10 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
 -keepattributes *Annotation*
+
+# OkHttp and its dependencies for Naver Login SDK
+# This is to address R8 errors for missing classes that OkHttp checks for at runtime.
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**

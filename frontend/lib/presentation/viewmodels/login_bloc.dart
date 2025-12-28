@@ -10,8 +10,7 @@ import 'package:chungyak_box/domain/usecases/get_latest_terms_use_case.dart';
 import 'package:chungyak_box/domain/usecases/google_login_use_case.dart';
 import 'package:chungyak_box/domain/usecases/naver_login_use_case.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_naver_login/flutter_naver_login.dart';
-import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 
@@ -20,8 +19,11 @@ import 'auth_event.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 
+import 'package:flutter/services.dart';
+
 @injectable
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
+  static const MethodChannel _platform = MethodChannel('com.chungyakbox/auth');
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final GoogleLoginUseCase _googleLoginUseCase;
   final NaverLoginUseCase _naverLoginUseCase;
@@ -116,18 +118,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     emit(const LoginLoading());
     try {
-      final naverUser = await FlutterNaverLogin.logIn();
-
-      if (naverUser.status != NaverLoginStatus.loggedIn) {
-        // User cancelled the sign-in or failed
+      final String? accessToken = await _platform.invokeMethod(
+        'signInWithNaver',
+      );
+      if (accessToken == null || accessToken.isEmpty) {
         emit(const LoginInitial());
-        return;
-      }
-
-      final accessToken = naverUser.accessToken?.accessToken;
-
-      if (accessToken == null) {
-        emit(const LoginFailure(message: '네이버 액세스 토큰을 가져올 수 없습니다.'));
         return;
       }
       final result = await _naverLoginUseCase(accessToken);
@@ -196,11 +191,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     SignOutRequested event,
     Emitter<LoginState> emit,
   ) async {
-    // Also ensure initialization before sign-out, in case it's called standalone
     await _initializeIfNeeded();
     await _googleSignIn.signOut();
-    await FlutterNaverLogin.logOut();
-    _authBloc.add(const LoggedOut()); // Notify AuthBloc
+    _authBloc.add(const LoggedOut());
   }
 
   Future<void> _onEmailPasswordLoginRequested(

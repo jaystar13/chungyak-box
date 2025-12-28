@@ -51,6 +51,7 @@ class _LoginViewState extends State<LoginView> {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(content: Text(state.message)));
               }
+
               if (state is LoginRequiresTermsAgreement) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -65,6 +66,7 @@ class _LoginViewState extends State<LoginView> {
           ),
           BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
+              // 로그인 성공 처리만 담당합니다.
               if (state is Authenticated) {
                 // Show success message
                 ScaffoldMessenger.of(context)
