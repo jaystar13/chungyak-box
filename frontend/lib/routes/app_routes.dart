@@ -7,9 +7,12 @@ import 'package:chungyak_box/presentation/screens/home_screen.dart';
 import 'package:chungyak_box/presentation/screens/login_screen.dart';
 import 'package:chungyak_box/presentation/screens/my_page_screen.dart';
 import 'package:chungyak_box/presentation/screens/my_subscription_screen.dart';
+import 'package:chungyak_box/presentation/screens/news/news_screen.dart';
 import 'package:chungyak_box/presentation/screens/signup_screen.dart';
 import 'package:chungyak_box/presentation/screens/terms/terms_screen.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/news/news_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/news/news_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -22,6 +25,7 @@ class Routes {
   static const String terms = '/terms';
   static const String signup = '/signup';
   static const String mySubscriptions = '/my-subscriptions';
+  static const String news = '/news';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -52,6 +56,14 @@ class Routes {
             child: CalculatorResultScreen(),
           ),
           settings: settings, // Forward settings to the route
+        );
+      case news:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => getIt<NewsBloc>()..add(LoadNews()),
+            child: const NewsScreen(),
+          ),
+          settings: settings,
         );
       case login:
         return MaterialPageRoute(

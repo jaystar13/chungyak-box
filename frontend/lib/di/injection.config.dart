@@ -53,6 +53,8 @@ import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart'
 import 'package:chungyak_box/presentation/viewmodels/login_bloc.dart' as _i662;
 import 'package:chungyak_box/presentation/viewmodels/my_subscription_bloc.dart'
     as _i954;
+import 'package:chungyak_box/presentation/viewmodels/news/news_bloc.dart'
+    as _i721;
 import 'package:chungyak_box/presentation/viewmodels/signup/signup_bloc.dart'
     as _i988;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
@@ -69,6 +71,7 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     gh.factory<_i988.TermMapper>(() => _i988.TermMapper());
     gh.factory<_i409.UserMapper>(() => _i409.UserMapper());
+    gh.factory<_i721.NewsBloc>(() => _i721.NewsBloc());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );

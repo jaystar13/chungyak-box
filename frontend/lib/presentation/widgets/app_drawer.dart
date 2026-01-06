@@ -122,6 +122,22 @@ class AppDrawer extends StatelessWidget {
             minLeadingWidth: tileLeadingWidth,
             horizontalTitleGap: tileTitleGap,
             leading: Icon(
+              Icons.newspaper,
+              color: colors.onSurface,
+              size: tileIconSize,
+            ),
+            title: Text(
+              '부동산 뉴스',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: tileTextStyle,
+            ),
+            onTap: () => _goTo(context, Routes.news),
+          ),
+          ListTile(
+            minLeadingWidth: tileLeadingWidth,
+            horizontalTitleGap: tileTitleGap,
+            leading: Icon(
               Icons.email,
               color: colors.onSurface,
               size: tileIconSize,
