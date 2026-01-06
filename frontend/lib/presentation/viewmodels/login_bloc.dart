@@ -193,6 +193,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     await _initializeIfNeeded();
     await _googleSignIn.signOut();
+    await _platform.invokeMethod('signOutWithNaver');
     _authBloc.add(const LoggedOut());
   }
 

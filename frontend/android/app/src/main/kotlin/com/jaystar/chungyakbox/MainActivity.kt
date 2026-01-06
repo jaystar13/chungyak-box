@@ -5,9 +5,8 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-import com.navercorp.nid.NaverIdLoginSDK
-import com.navercorp.nid.oauth.OAuthLoginCallback
-
+import com.navercorp.nid.NidOAuth
+import com.navercorp.nid.oauth.util.NidOAuthCallback
 
 class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "com.chungyakbox/auth"
@@ -15,51 +14,56 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
-            call, result ->
-            if (call.method == "signInWithNaver") {
-                channelResult = result
-                naverLogin()
-            } else {
-                result.notImplemented()
-            }
-        }
-    }
 
-    private fun naverLogin() {
         // Naver SDK 초기화
-        // strings.xml에서 클라이언트 정보 가져오기
         val naverClientId = getString(R.string.naver_client_id)
         val naverClientSecret = getString(R.string.naver_client_secret)
         val naverClientName = getString(R.string.naver_client_name)
 
-        NaverIdLoginSDK.initialize(this, naverClientId, naverClientSecret, naverClientName)
+        NidOAuth.initialize(this, naverClientId, naverClientSecret, naverClientName)
 
-        val oauthLoginCallBack = object : OAuthLoginCallback {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+            call, result ->
+            channelResult = result
+            when (call.method) {
+                "signInWithNaver" -> naverLogin()
+                "signOutWithNaver" -> naverLogout()
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    private fun naverLogout() {
+        NidOAuth.logout(object : NidOAuthCallback {
+            override fun onSuccess() {
+                channelResult?.success(true)
+                channelResult = null
+            }
+
+            override fun onFailure(code: String, message: String) {
+                channelResult?.error("NAVER_LOGOUT_FAILURE", "errorCode: $code, errorMessage: $message", null)
+                channelResult = null
+            }
+        })
+    }
+
+    private fun naverLogin() {
+
+        val oauthLoginCallback = object : NidOAuthCallback {
             override fun onSuccess() {
                 // 네이버 로그인 인증이 성공했을 때 수행할 코드 추가
-                val accessToken = NaverIdLoginSDK.getAccessToken()
-                //val refreshToken = NaverIdLoginSDK.getRefreshToken()
-                //val expiresAt = NaverIdLoginSDK.getExpiresAt()
-                //val tokenType = NaverIdLoginSDK.getTokenType()
-                //val state = NaverIdLoginSDK.getState()
-
+                val accessToken = NidOAuth.getAccessToken()
                 channelResult?.success(accessToken)
                 channelResult = null
             }
-            override fun onFailure(httpStatus: Int, message: String) {
+
+            override fun onFailure(code: String, message: String) {
                 // 네이버 로그인 인증이 실패했을 때 수행할 코드 추가
-                val errorCode = NaverIdLoginSDK.getLastErrorCode().code
-                val errorDescription = NaverIdLoginSDK.getLastErrorDescription()
-                channelResult?.error("NAVER_LOGIN_FAILURE", "errorCode: $errorCode, errorDescription: $errorDescription", null)
+                channelResult?.error("NAVER_LOGIN_FAILURE", "errorCode: $code, errorMessage: $message", null)
                 channelResult = null
-            }
-            override fun onError(errorCode: Int, message: String) {
-                // 네이버 로그인 인증 도중에 오류가 발생했을 때 수행할 코드 추가
-                onFailure(errorCode, message)
             }
         }
 
-        NaverIdLoginSDK.authenticate(this, oauthLoginCallBack)
+        NidOAuth.requestLogin(this, oauthLoginCallback)
     }
 }

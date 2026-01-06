@@ -8,7 +8,6 @@ class TermsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Implement responsive layout for tablet
     return Scaffold(
       appBar: AppBar(title: const Text('약관 동의')),
       body: const SafeArea(child: TermsMobileBody()),

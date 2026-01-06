@@ -12,7 +12,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     
     implementation("com.google.android.gms:play-services-ads:24.7.0")  
-    implementation("com.navercorp.nid:oauth:5.9.0")
+    implementation("com.navercorp.nid:oauth:5.11.0")
 }
 
 android {

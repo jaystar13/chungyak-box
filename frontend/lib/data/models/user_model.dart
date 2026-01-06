@@ -9,7 +9,7 @@ class UserModel {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String,
-      name: json['name'] as String?,
+      name: json['full_name'] as String?,
     );
   }
 

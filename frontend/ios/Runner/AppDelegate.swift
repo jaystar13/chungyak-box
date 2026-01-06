@@ -36,22 +36,25 @@ import NidThirdPartyLogin
 
     channel.setMethodCallHandler({
       (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-      guard call.method == "signInWithNaver" else {
-        result(FlutterMethodNotImplemented)
-        return
-      }
-
-      NidOAuth.shared.requestLogin { loginResult in
-        switch loginResult {
-        case .success(let accessToken):
-          result(accessToken.accessToken.tokenString)
-        case .failure(let error):
-          result(FlutterError(
-            code: "NAVER_LOGIN_FAILURE", 
-            message: error.description, details: nil
+      switch call.method {
+      case "signInWithNaver":
+        NidOAuth.shared.requestLogin { loginResult in
+          switch loginResult {
+          case .success(let accessToken):
+            result(accessToken.accessToken.tokenString)
+          case .failure(let error):
+            result(FlutterError(
+              code: "NAVER_LOGIN_FAILURE",
+              message: error.description, details: nil
+              )
             )
-          )
+          }
         }
+      case "signOutWithNaver":
+        NidOAuth.shared.logout()
+        result(true)
+      default:
+        result(FlutterMethodNotImplemented)
       }
     })
 

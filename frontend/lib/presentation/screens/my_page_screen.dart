@@ -75,25 +75,19 @@ class MyPageScreen extends StatelessWidget {
           // Show success message and navigate
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')),
-            );
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            Routes.home,
-            (route) => false,
-          );
+            ..showSnackBar(const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')));
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(Routes.home, (route) => false);
         } else if (state is Unauthenticated) {
           // Just navigate on regular logout
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            Routes.home,
-            (route) => false,
-          );
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(Routes.home, (route) => false);
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text('오류: ${state.message}')),
-            );
+            ..showSnackBar(SnackBar(content: Text('오류: ${state.message}')));
         }
       },
       builder: (context, state) {
@@ -114,12 +108,32 @@ class MyPageScreen extends StatelessWidget {
               ),
               SizedBox(height: 8.h), // Use ScreenUtil for height
               if (state is Authenticated)
-                Text(
-                  state.user.email,
-                  style: textTheme.bodyMedium!.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.7),
-                    fontSize: 14.sp,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    if (state.user.name != null)
+                      Text(
+                        '${state.user.name} 님',
+                        style: textTheme.titleMedium!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.sp,
+                          color: Colors.black,
+                        ),
+                      ),
+                    if (state.user.name != null)
+                      SizedBox(width: 8.w), // Spacing
+                    Flexible(
+                      child: Text(
+                        state.user.email,
+                        style: textTheme.bodyMedium!.copyWith(
+                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: 14.sp,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 )
               else
                 const SizedBox.shrink(),
