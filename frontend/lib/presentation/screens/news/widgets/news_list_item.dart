@@ -36,19 +36,25 @@ class NewsListItem extends StatelessWidget {
                         item.source,
                         style: textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: isViewed ? colors.onSurface.withOpacity(0.6) : colors.primary,
+                          color: isViewed
+                              ? colors.onSurface.withValues(alpha: 0.6)
+                              : colors.primary,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
                           "|",
-                          style: textTheme.bodySmall?.copyWith(color: colors.outline),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colors.outline,
+                          ),
                         ),
                       ),
                       Text(
                         item.date,
-                        style: textTheme.bodySmall?.copyWith(color: colors.onSurface.withOpacity(0.6)),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                       if (isRecent && !isViewed) ...[
                         const SizedBox(width: 8),
@@ -75,13 +81,13 @@ class NewsListItem extends StatelessWidget {
                         Icon(
                           Icons.check_circle_outline,
                           size: 14,
-                          color: colors.onSurface.withOpacity(0.6),
+                          color: colors.onSurface.withValues(alpha: 0.6),
                         ),
                         const SizedBox(width: 2),
                         Text(
                           "읽음",
                           style: textTheme.bodySmall?.copyWith(
-                            color: colors.onSurface.withOpacity(0.6),
+                            color: colors.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -94,7 +100,9 @@ class NewsListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: isViewed ? colors.onSurface.withOpacity(0.6) : colors.onSurface,
+                      color: isViewed
+                          ? colors.onSurface.withValues(alpha: 0.6)
+                          : colors.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -102,7 +110,9 @@ class NewsListItem extends StatelessWidget {
                     item.summary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodyMedium?.copyWith(color: colors.onSurface.withOpacity(0.7)),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.7),
+                    ),
                   ),
                 ],
               ),
@@ -128,7 +138,7 @@ class NewsListItem extends StatelessWidget {
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                                  loadingProgress.expectedTotalBytes!
                             : null,
                       ),
                     ),

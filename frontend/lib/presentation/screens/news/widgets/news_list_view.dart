@@ -42,10 +42,8 @@ class NewsListView extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(24),
       itemCount: newsItems.length,
-      separatorBuilder: (context, index) => Divider(
-        height: 1,
-        color: colors.outline.withOpacity(0.3),
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(height: 1, color: colors.outline.withValues(alpha: 0.3)),
       itemBuilder: (context, index) {
         final item = newsItems[index];
         final itemId = 'news-${item.id}';

@@ -61,9 +61,11 @@ class _NewsScreenState extends State<NewsScreen>
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: colors.primaryContainer.withOpacity(0.5),
+                          color: colors.primaryContainer.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -80,11 +82,13 @@ class _NewsScreenState extends State<NewsScreen>
 
                 // Custom Tab Bar
                 Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: colors.secondaryContainer.withOpacity(0.3),
+                    color: colors.secondaryContainer.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: TabBar(
@@ -94,14 +98,16 @@ class _NewsScreenState extends State<NewsScreen>
                       borderRadius: BorderRadius.circular(6),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 3,
                           offset: const Offset(0, 1),
                         ),
                       ],
                     ),
                     labelColor: colors.onSurface,
-                    unselectedLabelColor: colors.onSurface.withOpacity(0.7),
+                    unselectedLabelColor: colors.onSurface.withValues(
+                      alpha: 0.7,
+                    ),
                     labelStyle: textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

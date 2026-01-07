@@ -22,8 +22,10 @@ class VideoListItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isViewed ? colors.secondaryContainer.withOpacity(0.2) : colors.surface,
-        border: Border.all(color: colors.outline.withOpacity(0.2)),
+        color: isViewed
+            ? colors.secondaryContainer.withValues(alpha: 0.2)
+            : colors.surface,
+        border: Border.all(color: colors.outline.withValues(alpha: 0.2)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -47,12 +49,17 @@ class VideoListItem extends StatelessWidget {
                         if (loadingProgress == null) return child;
                         return Container(
                           color: colors.secondaryContainer,
-                          child: const Center(child: CircularProgressIndicator()),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         );
                       },
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: colors.secondaryContainer,
-                        child: Icon(Icons.videocam_off, color: colors.onSecondaryContainer),
+                        child: Icon(
+                          Icons.videocam_off,
+                          color: colors.onSecondaryContainer,
+                        ),
                       ),
                     ),
                   ),
@@ -64,7 +71,11 @@ class VideoListItem extends StatelessWidget {
                       color: isViewed ? Colors.black38 : Colors.black54,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
                 if (isViewed)
@@ -75,7 +86,7 @@ class VideoListItem extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
-                        color: colors.primary.withOpacity(0.8),
+                        color: colors.primary.withValues(alpha: 0.8),
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(8),
                           bottomRight: Radius.circular(8),
@@ -84,11 +95,17 @@ class VideoListItem extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.check, size: 12, color: Colors.white),
+                          const Icon(
+                            Icons.check,
+                            size: 12,
+                            color: Colors.white,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             "시청함",
-                            style: textTheme.labelSmall?.copyWith(color: Colors.white),
+                            style: textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -99,14 +116,19 @@ class VideoListItem extends StatelessWidget {
                     bottom: 4,
                     right: 4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         item.duration,
-                        style: textTheme.labelSmall?.copyWith(color: Colors.white),
+                        style: textTheme.labelSmall?.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -115,7 +137,10 @@ class VideoListItem extends StatelessWidget {
                       top: 4,
                       left: 4,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: colors.error,
                           borderRadius: BorderRadius.circular(4),
@@ -144,17 +169,23 @@ class VideoListItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isViewed ? colors.onSurface.withOpacity(0.6) : colors.onSurface,
+                    color: isViewed
+                        ? colors.onSurface.withValues(alpha: 0.6)
+                        : colors.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   item.channel,
-                  style: textTheme.bodySmall?.copyWith(color: colors.onSurface.withOpacity(0.7)),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
                 Text(
                   "조회수 ${item.views}",
-                  style: textTheme.bodySmall?.copyWith(color: colors.onSurface.withOpacity(0.5)),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.5),
+                  ),
                 ),
               ],
             ),

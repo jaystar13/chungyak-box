@@ -1,7 +1,7 @@
 import 'package:chungyak_box/domain/entities/recognition_calculation_result_entity.dart';
 import 'package:chungyak_box/domain/entities/recognition_calculator_request_entity.dart';
 import 'package:chungyak_box/domain/entities/recognition_round_record_entity.dart';
-import 'package:chungyak_box/presentation/widgets/payment_detail_bottom_sheet.dart';
+import 'package:chungyak_box/presentation/screens/calculator/widgets/payment_detail_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -54,7 +54,8 @@ class DetailedHistoryList extends StatelessWidget {
   final RecognitionCalculationResultEntity resultEntity;
   final Future<RecognitionCalculationResultEntity> Function(
     RecognitionCalculatorRequestEntity request,
-  ) onRecalculate;
+  )
+  onRecalculate;
 
   const DetailedHistoryList({
     super.key,
@@ -148,7 +149,8 @@ class _MonthlyDetailRow extends StatelessWidget {
   final RecognitionCalculationResultEntity resultEntity;
   final Future<RecognitionCalculationResultEntity> Function(
     RecognitionCalculatorRequestEntity request,
-  ) onRecalculate;
+  )
+  onRecalculate;
 
   const _MonthlyDetailRow({
     required this.detail,
@@ -207,10 +209,10 @@ class _MonthlyDetailRow extends StatelessWidget {
                           color: record.status == '지연'
                               ? colorScheme.error
                               : record.status == '선납'
-                                  ? colorScheme.tertiary
-                                  : record.status == '미납'
-                                      ? colorScheme.error
-                                      : colorScheme.primary,
+                              ? colorScheme.tertiary
+                              : record.status == '미납'
+                              ? colorScheme.error
+                              : colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

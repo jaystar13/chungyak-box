@@ -5,9 +5,9 @@ import 'package:chungyak_box/domain/entities/recognition_round_record_entity.dar
 import 'package:chungyak_box/presentation/viewmodels/calculator_bloc.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_event.dart';
 import 'package:chungyak_box/presentation/viewmodels/calculator_state.dart';
-import 'package:chungyak_box/presentation/widgets/calculator/detailed_history_list.dart';
-import 'package:chungyak_box/presentation/widgets/calculator/result_actions_helper.dart';
-import 'package:chungyak_box/presentation/widgets/calculator/bulk_change_dialog.dart';
+import 'package:chungyak_box/presentation/screens/calculator/widgets/detailed_history_list.dart';
+import 'package:chungyak_box/presentation/screens/calculator/widgets/result_actions_helper.dart';
+import 'package:chungyak_box/presentation/screens/calculator/widgets/bulk_change_dialog.dart';
 import 'package:chungyak_box/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
