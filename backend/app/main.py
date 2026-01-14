@@ -30,4 +30,10 @@ if settings.all_cors_origins:
         allow_headers=["*"],
     )
 
+
+@app.get("/", tags=["default"])
+def read_root():
+    return {"status": "ok"}
+
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
