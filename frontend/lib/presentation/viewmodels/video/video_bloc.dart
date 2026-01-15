@@ -1,38 +1,38 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chungyak_box/domain/repositories/content_repository.dart';
-import 'package:chungyak_box/presentation/viewmodels/news/news_event.dart';
-import 'package:chungyak_box/presentation/viewmodels/news/news_state.dart';
+import 'package:chungyak_box/presentation/viewmodels/video/video_event.dart';
+import 'package:chungyak_box/presentation/viewmodels/video/video_state.dart';
 import 'package:injectable/injectable.dart';
 import 'package:chungyak_box/core/result.dart';
 import 'package:chungyak_box/domain/entities/content_entity.dart';
 
 @injectable
-class NewsBloc extends Bloc<NewsEvent, NewsState> {
+class VideoBloc extends Bloc<VideoEvent, VideoState> {
   final ContentRepository _contentRepository;
 
-  NewsBloc(this._contentRepository) : super(const NewsState()) {
-    on<NewsFetched>(_onNewsFetched);
+  VideoBloc(this._contentRepository) : super(const VideoState()) {
+    on<VideoFetched>(_onVideoFetched);
   }
 
-  Future<void> _onNewsFetched(
-    NewsFetched event,
-    Emitter<NewsState> emit,
+  Future<void> _onVideoFetched(
+    VideoFetched event,
+    Emitter<VideoState> emit,
   ) async {
-    if (state.hasReachedMax && state.status != NewsStatus.initial) return;
+    if (state.hasReachedMax || state.status == VideoStatus.loading) return;
 
     try {
       // Initial fetch
-      if (state.status == NewsStatus.initial) {
-        emit(state.copyWith(status: NewsStatus.loading));
+      if (state.status == VideoStatus.initial) {
+        emit(state.copyWith(status: VideoStatus.loading));
         final result = await _contentRepository.getContents(
-          contentType: 'article',
+          contentType: 'video', // Changed from 'article' to 'video'
         );
 
         if (result is Success<ContentResponseEntity>) {
           final data = result.data;
           emit(
             state.copyWith(
-              status: NewsStatus.success,
+              status: VideoStatus.success,
               contents: data.results,
               nextCursor: data.nextCursor,
               hasReachedMax: data.nextCursor == null,
@@ -41,7 +41,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
         } else if (result is Error) {
           emit(
             state.copyWith(
-              status: NewsStatus.failure,
+              status: VideoStatus.failure,
               errorMessage: (result as Error).message,
             ),
           );
@@ -50,9 +50,9 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       }
 
       // Load more
-      emit(state.copyWith(status: NewsStatus.loading));
+      emit(state.copyWith(status: VideoStatus.loading));
       final result = await _contentRepository.getContents(
-        contentType: 'article',
+        contentType: 'video', // Changed from 'article' to 'video'
         cursor: state.nextCursor,
       );
 
@@ -60,7 +60,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
         final data = result.data;
         emit(
           state.copyWith(
-            status: NewsStatus.success,
+            status: VideoStatus.success,
             contents: List.of(state.contents)..addAll(data.results),
             nextCursor: data.nextCursor,
             hasReachedMax: data.nextCursor == null,
@@ -69,7 +69,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       } else if (result is Error) {
         emit(
           state.copyWith(
-            status: NewsStatus.failure,
+            status: VideoStatus.failure,
             errorMessage: (result as Error).message,
           ),
         );
@@ -77,7 +77,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     } catch (e) {
       emit(
         state.copyWith(
-          status: NewsStatus.failure,
+          status: VideoStatus.failure,
           errorMessage: '알 수 없는 오류가 발생했습니다.',
         ),
       );

@@ -1,18 +1,18 @@
-import 'package:chungyak_box/presentation/screens/news/widgets/news_list_item.dart';
+import 'package:chungyak_box/presentation/screens/video/widgets/video_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chungyak_box/presentation/viewmodels/news/news_bloc.dart';
-import 'package:chungyak_box/presentation/viewmodels/news/news_event.dart';
-import 'package:chungyak_box/presentation/viewmodels/news/news_state.dart';
+import 'package:chungyak_box/presentation/viewmodels/video/video_bloc.dart';
+import 'package:chungyak_box/presentation/viewmodels/video/video_event.dart';
+import 'package:chungyak_box/presentation/viewmodels/video/video_state.dart';
 
-class NewsListView extends StatefulWidget {
-  const NewsListView({super.key});
+class VideoListView extends StatefulWidget {
+  const VideoListView({super.key});
 
   @override
-  State<NewsListView> createState() => _NewsListViewState();
+  State<VideoListView> createState() => _VideoListViewState();
 }
 
-class _NewsListViewState extends State<NewsListView> {
+class _VideoListViewState extends State<VideoListView> {
   final _scrollController = ScrollController();
 
   @override
@@ -25,20 +25,19 @@ class _NewsListViewState extends State<NewsListView> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return BlocBuilder<NewsBloc, NewsState>(
+    return BlocBuilder<VideoBloc, VideoState>(
       builder: (context, state) {
         switch (state.status) {
-          case NewsStatus.initial:
+          case VideoStatus.initial:
             return const Center(child: CircularProgressIndicator());
 
-          case NewsStatus.failure:
-            return const Center(child: Text('뉴스를 불러오는데 실패했습니다.'));
+          case VideoStatus.failure:
+            return Center(child: Text('영상을 불러오는데 실패했습니다: ${state.errorMessage}'));
 
-          case NewsStatus.loading:
-          case NewsStatus.success:
+          case VideoStatus.loading:
+          case VideoStatus.success:
             if (state.contents.isEmpty) {
-              // 로딩 중이거나, 로딩 성공 후에도 컨텐츠가 없을 경우
-              return const Center(child: Text('표시할 뉴스가 없습니다.'));
+              return const Center(child: Text('표시할 영상이 없습니다.'));
             }
             return ListView.separated(
               controller: _scrollController,
@@ -52,8 +51,7 @@ class _NewsListViewState extends State<NewsListView> {
               ),
               itemBuilder: (BuildContext context, int index) {
                 if (index >= state.contents.length) {
-                  // 로딩중이고, 최대치에 도달하지 않았으면 맨 아래에 인디케이터 표시
-                  return state.status == NewsStatus.loading
+                  return state.status == VideoStatus.loading
                       ? const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
                           child: Center(child: CircularProgressIndicator()),
@@ -61,7 +59,7 @@ class _NewsListViewState extends State<NewsListView> {
                       : const SizedBox.shrink();
                 }
                 final item = state.contents[index];
-                return GestureDetector(child: NewsListItem(item: item));
+                return VideoListItem(item: item);
               },
             );
         }
@@ -79,7 +77,7 @@ class _NewsListViewState extends State<NewsListView> {
 
   void _onScroll() {
     if (_isBottom) {
-      context.read<NewsBloc>().add(NewsFetched());
+      context.read<VideoBloc>().add(VideoFetched());
     }
   }
 

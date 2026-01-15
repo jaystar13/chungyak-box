@@ -1,37 +1,20 @@
 import 'package:chungyak_box/di/injection.dart';
-import 'package:chungyak_box/presentation/layouts/responsive_layout.dart';
-import 'package:chungyak_box/presentation/screens/news/widgets/news_list_view.dart';
-import 'package:chungyak_box/presentation/screens/video/video_screen.dart';
-import 'package:chungyak_box/presentation/screens/news/tablet/news_screen_tablet.dart'; // Add this import
+import 'package:chungyak_box/presentation/screens/news/tablet/widgets/news_list_view_tablet.dart';
+import 'package:chungyak_box/presentation/screens/video/tablet/video_screen_tablet.dart';
 import 'package:chungyak_box/presentation/viewmodels/news/news_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:chungyak_box/presentation/viewmodels/news/news_event.dart';
 
-class NewsScreen extends StatelessWidget {
-  const NewsScreen({super.key});
+class NewsScreenTablet extends StatefulWidget {
+  const NewsScreenTablet({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const ResponsiveLayout(
-      mobileBody: NewsScreenMobile(),
-      tabletBody: NewsScreenTablet(),
-    );
-  }
+  State<NewsScreenTablet> createState() => _NewsScreenTabletState();
 }
 
-class NewsScreenMobile extends StatefulWidget {
-  // Renamed from NewsScreen
-  const NewsScreenMobile({super.key});
-
-  @override
-  State<NewsScreenMobile> createState() => _NewsScreenMobileState(); // Renamed from _NewsScreenState
-}
-
-class _NewsScreenMobileState
-    extends
-        State<NewsScreenMobile> // Renamed from _NewsScreenState
+class _NewsScreenTabletState extends State<NewsScreenTablet>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -69,9 +52,7 @@ class _NewsScreenMobileState
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer.withValues(
-                    alpha: 0.5,
-                  ), // Corrected
+                  color: colors.primaryContainer.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -91,9 +72,7 @@ class _NewsScreenMobileState
           margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: colors.secondaryContainer.withValues(
-              alpha: 0.3,
-            ), // Corrected
+            color: colors.secondaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
           ),
           child: TabBar(
@@ -103,16 +82,14 @@ class _NewsScreenMobileState
               borderRadius: BorderRadius.circular(6),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1), // Corrected
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 3,
                   offset: const Offset(0, 1),
                 ),
               ],
             ),
             labelColor: colors.onSurface,
-            unselectedLabelColor: colors.onSurface.withValues(
-              alpha: 0.7,
-            ), // Corrected
+            unselectedLabelColor: colors.onSurface.withValues(alpha: 0.7),
             labelStyle: textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -131,9 +108,9 @@ class _NewsScreenMobileState
             children: [
               BlocProvider(
                 create: (context) => getIt<NewsBloc>()..add(NewsFetched()),
-                child: const NewsListView(),
+                child: const NewsListViewTablet(),
               ),
-              const VideoScreen(),
+              const VideoScreenTablet(),
             ],
           ),
         ),

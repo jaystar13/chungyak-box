@@ -5,10 +5,10 @@ import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart'; // Add this import
 
-class NewsListItem extends StatelessWidget {
+class NewsListItemTablet extends StatelessWidget {
   final ContentEntity item;
 
-  const NewsListItem({super.key, required this.item});
+  const NewsListItemTablet({super.key, required this.item});
 
   // Add this helper method
   Future<void> _launchURL(BuildContext context, String url) async {
@@ -35,7 +35,7 @@ class NewsListItem extends StatelessWidget {
     return GestureDetector( // Wrap with GestureDetector
       onTap: () => _launchURL(context, item.url),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 20), // Increased vertical padding
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,7 +49,7 @@ class NewsListItem extends StatelessWidget {
                         Flexible(
                           child: Text(
                             item.press!,
-                            style: textTheme.bodySmall?.copyWith(
+                            style: textTheme.bodyMedium?.copyWith( // Increased font size
                               fontWeight: FontWeight.bold,
                               color: colors.primary,
                             ),
@@ -58,10 +58,10 @@ class NewsListItem extends StatelessWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 6), // Increased horizontal padding
                           child: Text(
                             "|",
-                            style: textTheme.bodySmall?.copyWith(
+                            style: textTheme.bodyMedium?.copyWith( // Increased font size
                               color: colors.outline,
                             ),
                           ),
@@ -69,30 +69,30 @@ class NewsListItem extends StatelessWidget {
                       ],
                       Text(
                         DateFormat('yyyy.MM.dd').format(item.publishedAt),
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.6),
+                        style: textTheme.bodyMedium?.copyWith( // Increased font size
+                          color: colors.onSurface.withValues(alpha: 0.6), // Corrected
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6), // Increased spacing
                   Text(
                     parseHtmlString(item.title),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodyLarge?.copyWith(
+                    style: textTheme.headlineSmall?.copyWith( // Increased font size
                       fontWeight: FontWeight.bold,
                       color: colors.onSurface,
                     ),
                   ),
                   if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6), // Increased spacing
                     Text(
                       parseHtmlString(item.subtitle!),
-                      maxLines: 1,
+                      maxLines: 2, // Allow more lines for subtitle
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.6),
+                      style: textTheme.bodyLarge?.copyWith( // Increased font size
+                        color: colors.onSurface.withValues(alpha: 0.6), // Corrected
                       ),
                     ),
                   ],
@@ -100,20 +100,20 @@ class NewsListItem extends StatelessWidget {
               ),
             ),
             if (item.thumbnailUrl != null) ...[
-              const SizedBox(width: 16),
+              const SizedBox(width: 16), // Adjusted spacing
               // Thumbnail
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8), // Adjusted border radius
                 child: Image.network(
                   item.thumbnailUrl!,
-                  width: 80.w,
-                  height: 80.w,
+                  width: 100.w, // Reduced thumbnail size
+                  height: 100.w, // Reduced thumbnail size
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
-                      width: 80.w,
-                      height: 80.w,
+                      width: 100.w,
+                      height: 100.w,
                       color: colors.secondaryContainer,
                       child: Center(
                         child: CircularProgressIndicator(
@@ -126,12 +126,13 @@ class NewsListItem extends StatelessWidget {
                     );
                   },
                   errorBuilder: (context, error, stackTrace) => Container(
-                    width: 100.w,
-                    height: 100.w,
+                    width: 100.w, // Match new size
+                    height: 100.w, // Match new size
                     color: colors.secondaryContainer,
                     child: Icon(
                       Icons.image_not_supported,
                       color: colors.onSecondaryContainer,
+                      size: 40.sp, // Adjusted icon size
                     ),
                   ),
                 ),

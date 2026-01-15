@@ -16,6 +16,7 @@ class NewsEntryCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
+        color: Colors.white,
         elevation: 1,
         child: Padding(
           padding: EdgeInsets.all(16.w),

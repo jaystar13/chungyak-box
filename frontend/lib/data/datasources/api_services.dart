@@ -1,6 +1,7 @@
 import 'package:chungyak_box/core/auth_exception.dart';
 import 'dart:convert';
 
+import 'package:chungyak_box/data/models/content_model.dart';
 import 'package:chungyak_box/data/models/my_subscription_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -14,9 +15,39 @@ class ApiServices {
   final FlutterSecureStorage _secureStorage;
 
   final String baseUrl = "https://chungyak-box.onrender.com";
+  final String contentsUrl = "https://subscription-collector.onrender.com";
   // final String baseUrl = "http://127.0.0.1:8000";
+  // final String contentsUrl = "http://127.0.0.1:8001";
 
   ApiServices(this._secureStorage);
+
+  Future<ContentResponse> getContents({
+    required String contentType,
+    String? cursor,
+  }) async {
+    final queryParameters = <String, String>{
+      'domain': 'housing',
+      'content_type': contentType,
+      'size': '20',
+    };
+
+    if (cursor != null) {
+      queryParameters['cursor'] = cursor;
+    }
+
+    final uri = Uri.parse(
+      '$contentsUrl/contents/',
+    ).replace(queryParameters: queryParameters);
+
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      return ContentResponse.fromJson(jsonResponse);
+    } else {
+      throw Exception('Failed to load content: ${response.statusCode}');
+    }
+  }
 
   Future<RecognitionCalculationResultModel> calculateRecognition(
     RecognitionCalculatorRequestModel request,

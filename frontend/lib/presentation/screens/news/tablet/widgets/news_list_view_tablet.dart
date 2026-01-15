@@ -1,18 +1,18 @@
-import 'package:chungyak_box/presentation/screens/news/widgets/news_list_item.dart';
+import 'package:chungyak_box/presentation/screens/news/tablet/widgets/news_list_item_tablet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chungyak_box/presentation/viewmodels/news/news_bloc.dart';
 import 'package:chungyak_box/presentation/viewmodels/news/news_event.dart';
 import 'package:chungyak_box/presentation/viewmodels/news/news_state.dart';
 
-class NewsListView extends StatefulWidget {
-  const NewsListView({super.key});
+class NewsListViewTablet extends StatefulWidget {
+  const NewsListViewTablet({super.key});
 
   @override
-  State<NewsListView> createState() => _NewsListViewState();
+  State<NewsListViewTablet> createState() => _NewsListViewTabletState();
 }
 
-class _NewsListViewState extends State<NewsListView> {
+class _NewsListViewTabletState extends State<NewsListViewTablet> {
   final _scrollController = ScrollController();
 
   @override
@@ -61,7 +61,7 @@ class _NewsListViewState extends State<NewsListView> {
                       : const SizedBox.shrink();
                 }
                 final item = state.contents[index];
-                return GestureDetector(child: NewsListItem(item: item));
+                return GestureDetector(child: NewsListItemTablet(item: item));
               },
             );
         }

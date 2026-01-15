@@ -10,6 +10,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:chungyak_box/data/datasources/api_services.dart' as _i879;
+import 'package:chungyak_box/data/mapper/content_mapper.dart' as _i262;
 import 'package:chungyak_box/data/mapper/latest_terms_mapper.dart' as _i75;
 import 'package:chungyak_box/data/mapper/login_response_mapper.dart' as _i839;
 import 'package:chungyak_box/data/mapper/term_mapper.dart' as _i988;
@@ -18,12 +19,16 @@ import 'package:chungyak_box/data/repositories/auth_repository_impl.dart'
     as _i242;
 import 'package:chungyak_box/data/repositories/calculator_repository_impl.dart'
     as _i277;
+import 'package:chungyak_box/data/repositories/content_repository_impl.dart'
+    as _i403;
 import 'package:chungyak_box/data/repositories/terms_repository_impl.dart'
     as _i280;
 import 'package:chungyak_box/di/register_module.dart' as _i717;
 import 'package:chungyak_box/domain/repositories/auth_repository.dart' as _i133;
 import 'package:chungyak_box/domain/repositories/calculator_repository.dart'
     as _i823;
+import 'package:chungyak_box/domain/repositories/content_repository.dart'
+    as _i152;
 import 'package:chungyak_box/domain/repositories/terms_repository.dart'
     as _i674;
 import 'package:chungyak_box/domain/usecases/calculate_recognition_use_case.dart'
@@ -57,6 +62,8 @@ import 'package:chungyak_box/presentation/viewmodels/news/news_bloc.dart'
     as _i721;
 import 'package:chungyak_box/presentation/viewmodels/signup/signup_bloc.dart'
     as _i988;
+import 'package:chungyak_box/presentation/viewmodels/video/video_bloc.dart'
+    as _i766;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -69,9 +76,9 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
+    gh.factory<_i262.ContentMapper>(() => _i262.ContentMapper());
     gh.factory<_i988.TermMapper>(() => _i988.TermMapper());
     gh.factory<_i409.UserMapper>(() => _i409.UserMapper());
-    gh.factory<_i721.NewsBloc>(() => _i721.NewsBloc());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );
@@ -105,6 +112,18 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i1042.SaveHousingSubscriptionDetailUseCase(
         gh<_i823.CalculatorRepository>(),
       ),
+    );
+    gh.lazySingleton<_i152.ContentRepository>(
+      () => _i403.ContentRepositoryImpl(
+        gh<_i879.ApiServices>(),
+        gh<_i262.ContentMapper>(),
+      ),
+    );
+    gh.factory<_i721.NewsBloc>(
+      () => _i721.NewsBloc(gh<_i152.ContentRepository>()),
+    );
+    gh.factory<_i766.VideoBloc>(
+      () => _i766.VideoBloc(gh<_i152.ContentRepository>()),
     );
     gh.lazySingleton<_i674.TermsRepository>(
       () => _i280.TermsRepositoryImpl(

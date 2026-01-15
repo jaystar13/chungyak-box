@@ -7,13 +7,4 @@ abstract class NewsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadNews extends NewsEvent {}
-
-class MarkItemAsViewed extends NewsEvent {
-  final String itemId;
-
-  const MarkItemAsViewed(this.itemId);
-
-  @override
-  List<Object> get props => [itemId];
-}
+class NewsFetched extends NewsEvent {}

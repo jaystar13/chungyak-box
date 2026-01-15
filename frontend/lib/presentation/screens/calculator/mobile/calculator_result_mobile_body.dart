@@ -100,8 +100,7 @@ class _CalculatorResultMobileBodyState
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('저장 완료'),
-          content:
-              const Text('저장이 완료되었습니다. 나의 청약내역에서 확인하시겠습니까?'),
+          content: const Text('저장이 완료되었습니다. 나의 청약내역에서 확인하시겠습니까?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
